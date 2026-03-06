@@ -1,0 +1,3 @@
+# OSM / GraphHopper – arquivos .pbf são grandes, não versionar
+*.pbf
+*.osm.pbf
