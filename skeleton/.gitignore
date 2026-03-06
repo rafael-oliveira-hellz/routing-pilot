@@ -6,3 +6,4 @@ target/
 # GraphHopper local data (download .pbf and place in data/)
 data/*.osm.pbf
 data/graph-cache/
+.pbf
