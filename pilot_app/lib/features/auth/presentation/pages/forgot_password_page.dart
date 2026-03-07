@@ -29,7 +29,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await sl<AuthRepository>().forgotPassword(_emailController.text.trim());
+      await serviceLocator<AuthRepository>().forgotPassword(_emailController.text.trim());
       if (!mounted) return;
       setState(() {
         _loading = false;

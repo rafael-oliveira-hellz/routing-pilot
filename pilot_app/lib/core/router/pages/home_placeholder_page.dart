@@ -23,7 +23,7 @@ class HomePlaceholderPage extends StatelessWidget {
             icon: const Icon(Icons.logout),
             tooltip: 'Sair',
             onPressed: () async {
-              await sl<AuthRepository>().logout();
+              await serviceLocator<AuthRepository>().logout();
               if (context.mounted) GoRouter.of(context).go('/login');
             },
           ),

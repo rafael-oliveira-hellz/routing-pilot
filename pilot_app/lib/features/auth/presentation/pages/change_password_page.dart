@@ -42,7 +42,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await sl<AuthRepository>().changePassword(
+      await serviceLocator<AuthRepository>().changePassword(
         _currentController.text,
         _newController.text,
       );

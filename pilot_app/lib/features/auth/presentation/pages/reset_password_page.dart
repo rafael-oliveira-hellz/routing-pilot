@@ -41,7 +41,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await sl<AuthRepository>().resetPassword(
+      await serviceLocator<AuthRepository>().resetPassword(
         widget.token,
         _passwordController.text,
       );

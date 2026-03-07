@@ -45,7 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      final repo = sl<AuthRepository>();
+      final repo = serviceLocator<AuthRepository>();
       await repo.register(RegisterRequest(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),

@@ -19,7 +19,7 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<void> _checkSession() async {
-    final repo = sl<AuthRepository>();
+    final repo = serviceLocator<AuthRepository>();
     final ok = await repo.tryRestoreSession();
     if (!mounted) return;
     if (ok) {

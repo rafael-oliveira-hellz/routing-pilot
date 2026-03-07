@@ -8,21 +8,22 @@ import 'package:pilot_app/features/auth/domain/auth_repository.dart';
 
 /// Registro de dependências (APIs, repositórios, use cases).
 /// APP-1005: ApiClient antes de AuthRepository (on401Retry usa repo); logout POST + refresh em 401.
-final GetIt sl = GetIt.instance;
+/// Locator de dependências (GetIt). Nome explícito para injeção de serviços.
+final GetIt serviceLocator = GetIt.instance;
 
 Future<void> configureDependencies() async {
-  sl.registerLazySingleton<SecureTokenStorage>(() => SecureTokenStorage());
-  sl.registerLazySingleton<RememberMePrefs>(() => RememberMePrefs());
-  sl.registerLazySingleton<AuthRemote>(() => AuthRemote());
-  sl.registerLazySingleton<ApiClient>(() => ApiClient(
-        getAccessToken: () => sl<SecureTokenStorage>().getAccessToken(),
-        on401: () => sl<AuthRepository>().logout(),
-        on401Retry: () => sl<AuthRepository>().tryRefreshAndSave(),
+  serviceLocator.registerLazySingleton<SecureTokenStorage>(() => SecureTokenStorage());
+  serviceLocator.registerLazySingleton<RememberMePrefs>(() => RememberMePrefs());
+  serviceLocator.registerLazySingleton<AuthRemote>(() => AuthRemote());
+  serviceLocator.registerLazySingleton<ApiClient>(() => ApiClient(
+        getAccessToken: () => serviceLocator<SecureTokenStorage>().getAccessToken(),
+        on401: () => serviceLocator<AuthRepository>().logout(),
+        on401Retry: () => serviceLocator<AuthRepository>().tryRefreshAndSave(),
       ));
-  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
-        remote: sl<AuthRemote>(),
-        storage: sl<SecureTokenStorage>(),
-        rememberMePrefs: sl<RememberMePrefs>(),
-        apiClient: sl<ApiClient>(),
+  serviceLocator.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
+        remote: serviceLocator<AuthRemote>(),
+        storage: serviceLocator<SecureTokenStorage>(),
+        rememberMePrefs: serviceLocator<RememberMePrefs>(),
+        apiClient: serviceLocator<ApiClient>(),
       ));
 }

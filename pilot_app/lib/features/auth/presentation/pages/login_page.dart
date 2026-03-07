@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      final repo = sl<AuthRepository>();
+      final repo = serviceLocator<AuthRepository>();
       await repo.login(LoginRequest(
         email: _emailController.text.trim(),
         password: _passwordController.text,
