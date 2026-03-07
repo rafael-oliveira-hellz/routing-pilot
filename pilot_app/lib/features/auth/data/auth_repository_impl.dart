@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:pilot_app/core/domain/dto/auth_dto.dart';
+import 'package:pilot_app/core/network/api_client.dart';
 import 'package:pilot_app/core/security/jwt_parser.dart';
 import 'package:pilot_app/core/security/remember_me_prefs.dart';
 import 'package:pilot_app/core/security/secure_token_storage.dart';
@@ -11,13 +13,16 @@ class AuthRepositoryImpl implements AuthRepository {
     required AuthRemote remote,
     required SecureTokenStorage storage,
     required RememberMePrefs rememberMePrefs,
+    required ApiClient apiClient,
   })  : _remote = remote,
         _storage = storage,
-        _rememberMePrefs = rememberMePrefs;
+        _rememberMePrefs = rememberMePrefs,
+        _apiClient = apiClient;
 
   final AuthRemote _remote;
   final SecureTokenStorage _storage;
   final RememberMePrefs _rememberMePrefs;
+  final ApiClient _apiClient;
 
   @override
   Future<LoginResponse> login(LoginRequest request) async {
@@ -40,7 +45,6 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<bool> tryRestoreSession() async {
     final access = await _storage.getAccessToken();
     final refresh = await _storage.getRefreshToken();
-    final rememberMe = await _rememberMePrefs.getRememberMe();
 
     if (access != null && access.isNotEmpty) {
       if (!JwtParser.isExpiredOrExpiringSoon(access, bufferSeconds: 300)) {
@@ -67,8 +71,55 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<bool> tryRefreshAndSave() async {
+    final refresh = await _storage.getRefreshToken();
+    if (refresh == null || refresh.isEmpty) return false;
+    try {
+      final res = await _remote.refresh(refresh);
+      await _storage.saveTokens(
+        accessToken: res.accessToken,
+        refreshToken: res.refreshToken,
+      );
+      if (res.user != null) await _storage.saveUser(res.user!);
+      return true;
+    } catch (_) {
+      await _storage.clearTokens();
+      return false;
+    }
+  }
+
+  @override
   Future<void> logout() async {
+    try {
+      await _apiClient.dio.post<void>('/api/v1/auth/logout');
+    } on DioException catch (_) {
+      // Sempre limpa storage mesmo se o POST falhar
+    }
     await _storage.clearTokens();
+  }
+
+  @override
+  Future<void> forgotPassword(String email) async {
+    await _remote.forgotPassword(ForgotPasswordRequest(email: email));
+  }
+
+  @override
+  Future<void> resetPassword(String token, String newPassword) async {
+    await _remote.resetPassword(ResetPasswordRequest(
+      token: token,
+      newPassword: newPassword,
+    ));
+  }
+
+  @override
+  Future<void> changePassword(String currentPassword, String newPassword) async {
+    await _apiClient.dio.post<void>(
+      '/api/v1/auth/change-password',
+      data: ChangePasswordRequest(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      ).toJson(),
+    );
   }
 
   @override

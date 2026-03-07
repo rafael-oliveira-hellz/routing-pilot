@@ -15,7 +15,13 @@ class HomePlaceholderPage extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.lock_reset),
+            tooltip: 'Alterar senha',
+            onPressed: () => GoRouter.of(context).go('/change-password'),
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Sair',
             onPressed: () async {
               await sl<AuthRepository>().logout();
               if (context.mounted) GoRouter.of(context).go('/login');

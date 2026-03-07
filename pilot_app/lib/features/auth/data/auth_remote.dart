@@ -52,4 +52,18 @@ class AuthRemote {
       data: request.toJson(),
     );
   }
+
+  Future<void> forgotPassword(ForgotPasswordRequest request) async {
+    await _dio.post<void>(
+      '/api/v1/auth/forgot-password',
+      data: request.toJson(),
+    );
+  }
+
+  Future<void> resetPassword(ResetPasswordRequest request) async {
+    await _dio.post<void>(
+      '/api/v1/auth/reset-password',
+      data: request.toJson(),
+    );
+  }
 }

@@ -5,13 +5,14 @@ import 'package:pilot_app/core/network/error_response.dart';
 import 'package:pilot_app/core/utils/trace_id.dart';
 
 /// Cliente HTTP Dio com interceptors: Bearer, X-Trace-Id, timeout.
-/// Tratamento de 401 (AuthException), 429 (Retry-After), 503 (NetworkException).
-/// Não logar tokens nem corpo de resposta com dados sensíveis.
+/// Em 401: tenta on401Retry (refresh); se sucesso reenvia a requisição; senão on401 (logout).
+/// Tratamento de 429 (Retry-After), 503 (NetworkException). Não logar tokens.
 class ApiClient {
   ApiClient({
     required this.getAccessToken,
     Dio? dio,
     this.on401,
+    this.on401Retry,
   }) : _dio = dio ?? Dio() {
     _dio.options.baseUrl = AppConfig.baseUrl;
     _dio.options.connectTimeout = AppConfig.httpTimeout;
@@ -26,6 +27,7 @@ class ApiClient {
 
   final Future<String?> Function() getAccessToken;
   final Future<void> Function()? on401;
+  final Future<bool> Function()? on401Retry;
 
   final Dio _dio;
   String? _currentTraceId;
@@ -58,10 +60,43 @@ class ApiClient {
 
   InterceptorsWrapper _errorInterceptor() {
     return InterceptorsWrapper(
-      onError: (error, handler) {
+      onError: (error, handler) async {
         final response = error.response;
         if (response != null) {
+          if (response.statusCode == 401 && on401Retry != null) {
+            final ok = await on401Retry!();
+            if (ok) {
+              try {
+                final res = await _dio.fetch(response.requestOptions);
+                handler.resolve(res);
+              } catch (e) {
+                handler.reject(
+                  e is DioException
+                      ? e
+                      : DioException(
+                          requestOptions: response.requestOptions,
+                          error: e,
+                        ),
+                );
+              }
+              return;
+            }
+            on401?.call();
+            handler.reject(
+              DioException(
+                requestOptions: response.requestOptions,
+                response: response,
+                error: AuthException(
+                  'Sessão expirada',
+                  'UNAUTHORIZED',
+                  response.requestOptions.headers['X-Trace-Id'] as String?,
+                ),
+              ),
+            );
+            return;
+          }
           if (response.statusCode == 401) {
+            on401?.call();
             handler.reject(
               DioException(
                 requestOptions: response.requestOptions,
