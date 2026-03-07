@@ -37,6 +37,7 @@ dependencies:
   flutter_dotenv: ^5.2.1
   dio: ^5.7.0
   flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.3
   # Sprint 2+: (models de rota)
   # Sprint 3+: google_maps_flutter ou mapbox
   # Sprint 4+: geolocator, web_socket_channel, connectivity_plus

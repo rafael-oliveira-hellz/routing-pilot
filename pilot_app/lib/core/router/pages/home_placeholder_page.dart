@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pilot_app/core/di/injection.dart';
+import 'package:pilot_app/features/auth/domain/auth_repository.dart';
 
 /// Placeholder da tela inicial até a implementação da home real (pós-login).
 class HomePlaceholderPage extends StatelessWidget {
@@ -11,6 +13,15 @@ class HomePlaceholderPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Pilot'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await sl<AuthRepository>().logout();
+              if (context.mounted) GoRouter.of(context).go('/login');
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Padding(
@@ -39,14 +50,8 @@ class HomePlaceholderPage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              TextButton.icon(
-                onPressed: () => GoRouter.of(context).go('/login'),
-                icon: const Icon(Icons.login),
-                label: const Text('Ir para Login (placeholder)'),
-              ),
-              const SizedBox(height: 16),
               Text(
-                'Estrutura e config: APP-1001',
+                'Estrutura e config: APP-1001 · Auth: APP-1004',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.outline,
                     ),

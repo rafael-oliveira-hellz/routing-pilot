@@ -67,6 +67,32 @@ class LoginResponse {
   }
 }
 
+/// Resposta de POST /api/v1/auth/refresh (user opcional).
+class RefreshResponse {
+  const RefreshResponse({
+    required this.accessToken,
+    required this.refreshToken,
+    required this.expiresIn,
+    this.user,
+  });
+
+  final String accessToken;
+  final String refreshToken;
+  final int expiresIn;
+  final UserResponse? user;
+
+  factory RefreshResponse.fromJson(Map<String, dynamic> json) {
+    return RefreshResponse(
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
+      expiresIn: json['expiresIn'] as int,
+      user: json['user'] != null
+          ? UserResponse.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
 class ChangePasswordRequest {
   const ChangePasswordRequest({
     required this.currentPassword,
@@ -102,5 +128,24 @@ class ResetPasswordRequest {
   Map<String, dynamic> toJson() => {
         'token': token,
         'newPassword': newPassword,
+      };
+}
+
+/// Request para POST /api/v1/users (cadastro).
+class RegisterRequest {
+  const RegisterRequest({
+    required this.email,
+    required this.password,
+    required this.name,
+  });
+
+  final String email;
+  final String password;
+  final String name;
+
+  Map<String, dynamic> toJson() => {
+        'email': email,
+        'password': password,
+        'name': name,
       };
 }
