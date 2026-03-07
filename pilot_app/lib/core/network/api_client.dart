@@ -110,6 +110,20 @@ class ApiClient {
             );
             return;
           }
+          if (response.statusCode == 403) {
+            handler.reject(
+              DioException(
+                requestOptions: response.requestOptions,
+                response: response,
+                error: AuthException(
+                  'Sem permissão',
+                  'FORBIDDEN',
+                  response.requestOptions.headers['X-Trace-Id'] as String?,
+                ),
+              ),
+            );
+            return;
+          }
           if (response.statusCode == 429) {
             final retryAfter = response.headers.value('Retry-After');
             handler.reject(

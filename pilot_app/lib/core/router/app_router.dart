@@ -8,8 +8,9 @@ import 'package:pilot_app/features/auth/presentation/pages/login_page.dart';
 import 'package:pilot_app/features/auth/presentation/pages/register_page.dart';
 import 'package:pilot_app/features/auth/presentation/pages/reset_password_page.dart';
 import 'package:pilot_app/features/auth/presentation/pages/security_page.dart';
+import 'package:pilot_app/features/admin/presentation/pages/admin_users_page.dart';
 
-/// Rotas nomeadas e deep links do Pilot App. APP-1006: segurança/sessões.
+/// Rotas nomeadas e deep links do Pilot App. APP-1007: admin/users.
 class AppRouter {
   static const String routeSplash = 'splash';
   static const String routeHome = 'home';
@@ -19,6 +20,7 @@ class AppRouter {
   static const String routeResetPassword = 'reset-password';
   static const String routeChangePassword = 'change-password';
   static const String routeSecurity = 'security';
+  static const String routeAdminUsers = 'admin-users';
 
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
@@ -65,6 +67,11 @@ class AppRouter {
         path: '/security',
         name: routeSecurity,
         builder: (_, __) => const SecurityPage(),
+      ),
+      GoRoute(
+        path: '/admin/users',
+        name: routeAdminUsers,
+        builder: (_, __) => const AdminUsersPage(),
       ),
     ],
     errorBuilder: (_, state) => Scaffold(

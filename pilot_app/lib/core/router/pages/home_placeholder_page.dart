@@ -4,8 +4,24 @@ import 'package:pilot_app/core/di/injection.dart';
 import 'package:pilot_app/features/auth/domain/auth_repository.dart';
 
 /// Placeholder da tela inicial até a implementação da home real (pós-login).
-class HomePlaceholderPage extends StatelessWidget {
+/// Menu Administração só visível para role == ADMIN. APP-1007.
+class HomePlaceholderPage extends StatefulWidget {
   const HomePlaceholderPage({super.key});
+
+  @override
+  State<HomePlaceholderPage> createState() => _HomePlaceholderPageState();
+}
+
+class _HomePlaceholderPageState extends State<HomePlaceholderPage> {
+  bool? _isAdmin;
+
+  @override
+  void initState() {
+    super.initState();
+    serviceLocator<AuthRepository>().getCurrentUser().then((user) {
+      if (mounted) setState(() => _isAdmin = user?.isAdmin ?? false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +30,12 @@ class HomePlaceholderPage extends StatelessWidget {
         title: const Text('Pilot'),
         centerTitle: true,
         actions: [
+          if (_isAdmin == true)
+            IconButton(
+              icon: const Icon(Icons.people),
+              tooltip: 'Administração — Usuários',
+              onPressed: () => GoRouter.of(context).go('/admin/users'),
+            ),
           IconButton(
             icon: const Icon(Icons.security),
             tooltip: 'Segurança e sessões',

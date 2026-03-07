@@ -33,6 +33,9 @@ class UserResponse {
   final String? vehicleId;
   final String role;
 
+  /// Papéis: USER e ADMIN. APP-1007.
+  bool get isAdmin => role.toUpperCase() == 'ADMIN';
+
   factory UserResponse.fromJson(Map<String, dynamic> json) {
     return UserResponse(
       id: json['id'] as String,
@@ -40,6 +43,35 @@ class UserResponse {
       name: json['name'] as String,
       vehicleId: json['vehicleId'] as String?,
       role: json['role'] as String? ?? 'USER',
+    );
+  }
+}
+
+/// Item da lista de usuários (admin). GET /api/v1/users.
+class UserListItemDto {
+  const UserListItemDto({
+    required this.id,
+    required this.email,
+    required this.name,
+    required this.role,
+    this.active = true,
+  });
+
+  final String id;
+  final String email;
+  final String name;
+  final String role;
+  final bool active;
+
+  bool get isAdmin => role.toUpperCase() == 'ADMIN';
+
+  factory UserListItemDto.fromJson(Map<String, dynamic> json) {
+    return UserListItemDto(
+      id: json['id'] as String,
+      email: json['email'] as String,
+      name: json['name'] as String,
+      role: json['role'] as String? ?? 'USER',
+      active: json['active'] as bool? ?? true,
     );
   }
 }

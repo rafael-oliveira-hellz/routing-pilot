@@ -4,10 +4,12 @@ import 'package:pilot_app/core/security/remember_me_prefs.dart';
 import 'package:pilot_app/core/security/secure_token_storage.dart';
 import 'package:pilot_app/features/auth/data/auth_remote.dart';
 import 'package:pilot_app/features/auth/data/auth_repository_impl.dart';
+import 'package:pilot_app/features/admin/data/admin_repository_impl.dart';
+import 'package:pilot_app/features/admin/domain/admin_repository.dart';
 import 'package:pilot_app/features/auth/domain/auth_repository.dart';
 
 /// Registro de dependências (APIs, repositórios, use cases).
-/// APP-1005: ApiClient antes de AuthRepository (on401Retry usa repo); logout POST + refresh em 401.
+/// APP-1007: AdminRepository (GET/DELETE users).
 /// Locator de dependências (GetIt). Nome explícito para injeção de serviços.
 final GetIt serviceLocator = GetIt.instance;
 
@@ -24,6 +26,9 @@ Future<void> configureDependencies() async {
         remote: serviceLocator<AuthRemote>(),
         storage: serviceLocator<SecureTokenStorage>(),
         rememberMePrefs: serviceLocator<RememberMePrefs>(),
+        apiClient: serviceLocator<ApiClient>(),
+      ));
+  serviceLocator.registerLazySingleton<AdminRepository>(() => AdminRepositoryImpl(
         apiClient: serviceLocator<ApiClient>(),
       ));
 }
