@@ -20,6 +20,9 @@ import com.example.routing.engine.optimization.tsp.TwoThirdsApproximationRouteMa
 import com.example.routing.infrastructure.persistence.entity.*;
 import com.example.routing.infrastructure.persistence.repository.*;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.PrecisionModel;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +45,7 @@ public class RecalculateRouteUseCase {
     private final RouteOptimizationRepository optimizationRepo;
     private final RouteResultRepository resultRepo;
     private final RouteWaypointRepository waypointRepo;
+    private final RouteSegmentRepository segmentRepo;
     private final RouteStopRepository stopRepo;
     private final VehicleStateStore stateStore;
     private final EventPublisher eventPublisher;
@@ -116,15 +120,39 @@ public class RecalculateRouteUseCase {
                     .totalDurationSeconds(totalDur)
                     .build());
 
+            GeometryFactory gf = new GeometryFactory(new PrecisionModel(), 4326);
             List<RouteWaypointJpaEntity> waypoints = new ArrayList<>();
-            for (int i = 0; i < optimizedRoute.size(); i++) {
+            for (int i = 0; i < orderedPoints.size(); i++) {
+                Coordinate c = orderedPoints.get(i);
                 waypoints.add(RouteWaypointJpaEntity.builder()
                         .id(UUID.randomUUID())
                         .resultId(result.getId())
                         .sequenceOrder(i + 1)
+                        .location(gf.createPoint(new org.locationtech.jts.geom.Coordinate(c.getLongitude(), c.getLatitude())))
                         .build());
             }
             waypointRepo.saveAll(waypoints);
+
+            List<RouteSegmentJpaEntity> segmentEntities = new ArrayList<>();
+            for (int i = 0; i < segments.size(); i++) {
+                GraphHopperSegmentRouter.SegmentResult sr = segments.get(i);
+                List<double[]> pts = sr.geometryPoints();
+                org.locationtech.jts.geom.Coordinate[] coords = pts.stream()
+                        .map(p -> new org.locationtech.jts.geom.Coordinate(p[1], p[0]))
+                        .toArray(org.locationtech.jts.geom.Coordinate[]::new);
+                LineString pathGeometry = coords.length >= 2 ? gf.createLineString(coords) : null;
+                segmentEntities.add(RouteSegmentJpaEntity.builder()
+                        .resultId(result.getId())
+                        .fromPoint(waypoints.get(i).getId())
+                        .toPoint(waypoints.get(i + 1).getId())
+                        .segmentOrder(i + 1)
+                        .distanceMeters(sr.distanceMeters())
+                        .travelTimeSeconds(sr.durationSeconds())
+                        .pathGeometry(pathGeometry)
+                        .trafficLevel(null)
+                        .build());
+            }
+            segmentRepo.saveAll(segmentEntities);
 
             optimizationRepo.save(RouteOptimizationJpaEntity.builder()
                     .id(optimizationId)

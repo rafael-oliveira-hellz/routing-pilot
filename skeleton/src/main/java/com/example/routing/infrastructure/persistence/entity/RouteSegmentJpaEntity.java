@@ -23,6 +23,9 @@ public class RouteSegmentJpaEntity {
     @Column(name = "to_point", nullable = false)
     private UUID toPoint;
 
+    @Column(name = "segment_order", nullable = false)
+    private int segmentOrder;
+
     @Column(name = "distance_meters")
     private double distanceMeters;
 
@@ -31,6 +34,10 @@ public class RouteSegmentJpaEntity {
 
     @Column(name = "path_geometry", columnDefinition = "geometry(LineString,4326)")
     private LineString pathGeometry;
+
+    /** HEAVY = trânsito intenso (app pinta em vermelho). NORMAL ou null = fluido. Por enquanto definir com base em incidentes (HEAVY_TRAFFIC ou severidade alta). */
+    @Column(name = "traffic_level", length = 20)
+    private String trafficLevel;
 
     @PrePersist
     void prePersist() {

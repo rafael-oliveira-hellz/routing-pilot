@@ -45,7 +45,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RateLimitExceededException.class)
     public ResponseEntity<ErrorResponse> handleRateLimit(RateLimitExceededException e, HttpServletRequest req) {
         log.warn("Rate limit exceeded: {}", e.getMessage());
-        return response(HttpStatus.TOO_MANY_REQUESTS, e.getErrorCode(), e.getMessage(), req);
+        ResponseEntity<ErrorResponse> resp = response(HttpStatus.TOO_MANY_REQUESTS, e.getErrorCode(), e.getMessage(), req);
+        return ResponseEntity.status(resp.getStatusCode())
+                .header("Retry-After", String.valueOf(e.getRetryAfterSeconds()))
+                .body(resp.getBody());
     }
 
     @ExceptionHandler(ConcurrencyLimitExceededException.class)

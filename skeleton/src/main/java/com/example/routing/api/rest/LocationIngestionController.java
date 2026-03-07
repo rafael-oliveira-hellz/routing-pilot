@@ -2,7 +2,9 @@ package com.example.routing.api.rest;
 
 import com.example.routing.application.port.out.EventPublisher;
 import com.example.routing.application.port.out.LocationDedupPort;
+import com.example.routing.application.port.out.RateLimitPort;
 import com.example.routing.domain.event.LocationUpdatedEvent;
+import com.example.routing.domain.exception.RateLimitExceededException;
 import com.example.routing.domain.model.GeoPoint;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -25,11 +27,16 @@ public class LocationIngestionController {
 
     private final EventPublisher eventPublisher;
     private final LocationDedupPort locationDedup;
+    private final RateLimitPort rateLimitPort;
 
     @PostMapping
     public ResponseEntity<IngestionResponse> ingest(
             @Valid @RequestBody BatchLocationRequest request,
             @RequestHeader(value = "X-Trace-Id", required = false) String incomingTraceId) {
+
+        if (rateLimitPort.isLocationRateLimited(request.vehicleId())) {
+            throw new RateLimitExceededException("Rate limit exceeded for vehicle " + request.vehicleId(), 60);
+        }
 
         UUID traceId = incomingTraceId != null ? UUID.fromString(incomingTraceId) : UUID.randomUUID();
         int accepted = 0, duplicates = 0, rejected = 0;

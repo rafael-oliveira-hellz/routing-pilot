@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface RouteSegmentRepository extends JpaRepository<RouteSegmentJpaEntity, UUID> {
 
-    List<RouteSegmentJpaEntity> findByResultIdOrderByFromPoint(UUID resultId);
+    List<RouteSegmentJpaEntity> findByResultIdOrderBySegmentOrder(UUID resultId);
 }
