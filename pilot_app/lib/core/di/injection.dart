@@ -7,9 +7,12 @@ import 'package:pilot_app/features/auth/data/auth_repository_impl.dart';
 import 'package:pilot_app/features/admin/data/admin_repository_impl.dart';
 import 'package:pilot_app/features/admin/domain/admin_repository.dart';
 import 'package:pilot_app/features/auth/domain/auth_repository.dart';
+import 'package:pilot_app/features/route_planning/data/route_remote.dart';
+import 'package:pilot_app/features/route_planning/data/route_repository_impl.dart';
+import 'package:pilot_app/features/route_planning/domain/route_repository.dart';
 
 /// Registro de dependências (APIs, repositórios, use cases).
-/// APP-1007: AdminRepository (GET/DELETE users).
+/// APP-2001: RouteRepository (POST route-requests).
 /// Locator de dependências (GetIt). Nome explícito para injeção de serviços.
 final GetIt serviceLocator = GetIt.instance;
 
@@ -30,5 +33,11 @@ Future<void> configureDependencies() async {
       ));
   serviceLocator.registerLazySingleton<AdminRepository>(() => AdminRepositoryImpl(
         apiClient: serviceLocator<ApiClient>(),
+      ));
+  serviceLocator.registerLazySingleton<RouteRemote>(() => RouteRemote(
+        apiClient: serviceLocator<ApiClient>(),
+      ));
+  serviceLocator.registerLazySingleton<RouteRepository>(() => RouteRepositoryImpl(
+        remote: serviceLocator<RouteRemote>(),
       ));
 }
