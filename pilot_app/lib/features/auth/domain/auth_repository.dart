@@ -14,6 +14,9 @@ abstract class AuthRepository {
   Future<void> resetPassword(String token, String newPassword);
   Future<void> changePassword(String currentPassword, String newPassword);
 
+  /// Revoga todas as outras sessões (ex.: celular perdido/roubado). Backend pode retornar novo refreshToken.
+  Future<void> revokeAllOtherSessions();
+
   Future<UserResponse?> getCurrentUser();
   Future<bool> getRememberMe();
   Future<void> setRememberMe(bool value);

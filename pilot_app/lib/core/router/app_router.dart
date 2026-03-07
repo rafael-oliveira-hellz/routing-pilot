@@ -7,8 +7,9 @@ import 'package:pilot_app/features/auth/presentation/pages/forgot_password_page.
 import 'package:pilot_app/features/auth/presentation/pages/login_page.dart';
 import 'package:pilot_app/features/auth/presentation/pages/register_page.dart';
 import 'package:pilot_app/features/auth/presentation/pages/reset_password_page.dart';
+import 'package:pilot_app/features/auth/presentation/pages/security_page.dart';
 
-/// Rotas nomeadas e deep links do Pilot App. APP-1005: forgot/reset/change password.
+/// Rotas nomeadas e deep links do Pilot App. APP-1006: segurança/sessões.
 class AppRouter {
   static const String routeSplash = 'splash';
   static const String routeHome = 'home';
@@ -17,6 +18,7 @@ class AppRouter {
   static const String routeForgotPassword = 'forgot-password';
   static const String routeResetPassword = 'reset-password';
   static const String routeChangePassword = 'change-password';
+  static const String routeSecurity = 'security';
 
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
@@ -58,6 +60,11 @@ class AppRouter {
         path: '/change-password',
         name: routeChangePassword,
         builder: (_, __) => const ChangePasswordPage(),
+      ),
+      GoRoute(
+        path: '/security',
+        name: routeSecurity,
+        builder: (_, __) => const SecurityPage(),
       ),
     ],
     errorBuilder: (_, state) => Scaffold(

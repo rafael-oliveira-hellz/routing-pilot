@@ -123,6 +123,25 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> revokeAllOtherSessions() async {
+    final r = await _apiClient.dio.post<Map<String, dynamic>>(
+      '/api/v1/auth/revoke-all-other-sessions',
+    );
+    final data = r.data;
+    if (data != null &&
+        data['refreshToken'] != null &&
+        data['accessToken'] != null &&
+        data['expiresIn'] != null) {
+      final res = RefreshResponse.fromJson(data);
+      await _storage.saveTokens(
+        accessToken: res.accessToken,
+        refreshToken: res.refreshToken,
+      );
+      if (res.user != null) await _storage.saveUser(res.user!);
+    }
+  }
+
+  @override
   Future<UserResponse?> getCurrentUser() => _storage.getUser();
 
   @override
