@@ -1,4 +1,9 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.tsp;
+
+import com.example.routing.engine.optimization.mst.ResultDTO;
+import com.example.routing.engine.optimization.mst.SpanningTreeMaker;
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.WaypointSequence;
 
 import java.util.List;
 import java.util.UUID;

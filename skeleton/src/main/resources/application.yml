@@ -84,6 +84,9 @@ routing:
     backoff-base-ms: 1000
     backoff-multiplier: 4
 
+  rate-limit:
+    # Backend do rate limit: redis (default) | memcached | etc. Trocar aqui + implementar o adapter correspondente.
+    backend: ${ROUTING_RATE_LIMIT_BACKEND:redis}
   incident:
     default-zoom: 14
     rate-limit-per-minute: 5

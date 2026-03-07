@@ -16,6 +16,8 @@
 
 ## Estrutura de pacotes
 
+Caminho base no repositório: **`skeleton/src/main/java/com/example/routing/`** (pacote Java `com.example.routing`).
+
 ```text
 skeleton/
 ├── pom.xml
@@ -25,84 +27,211 @@ skeleton/
     │   │
     │   ├── domain/
     │   │   ├── enums/
+    │   │   │   ├── Decision.java
     │   │   │   ├── ImproveFor.java
     │   │   │   ├── IncidentSeverity.java
     │   │   │   ├── IncidentType.java
+    │   │   │   ├── OptimizationStatus.java
+    │   │   │   ├── OptimizationStrategy.java
+    │   │   │   ├── ProcessingErrorCode.java
     │   │   │   ├── RecalcReason.java
     │   │   │   ├── RouteType.java
     │   │   │   ├── RouteTypeVariant.java
     │   │   │   ├── Traffic.java
     │   │   │   ├── TunnelCategory.java
     │   │   │   ├── Vehicle.java
-    │   │   │   └── VehicleStatus.java
+    │   │   │   ├── VehicleStatus.java
+    │   │   │   └── VoteType.java
     │   │   ├── model/
-    │   │   │   ├── ActiveIncident.java         (record)
-    │   │   │   ├── EtaState.java               (record)
-    │   │   │   ├── GeoPoint.java               (record, validated)
-    │   │   │   ├── PolicyDecision.java         (enum)
-    │   │   │   ├── RegionTile.java             (record, tile math)
-    │   │   │   ├── RouteProgress.java          (record)
-    │   │   │   └── VehicleState.java           (record, immutable)
+    │   │   │   ├── ActiveIncident.java
+    │   │   │   ├── AlgorithmConfig.java
+    │   │   │   ├── EtaState.java
+    │   │   │   ├── GeoPoint.java
+    │   │   │   ├── PolicyDecision.java
+    │   │   │   ├── Polyline.java
+    │   │   │   ├── ProcessingError.java
+    │   │   │   ├── RegionTile.java
+    │   │   │   ├── RouteProgress.java
+    │   │   │   ├── SegmentMetrics.java
+    │   │   │   ├── TimeWindow.java
+    │   │   │   └── VehicleState.java
+    │   │   ├── entity/
+    │   │   │   ├── ExecutionEvent.java
+    │   │   │   └── LivePosition.java
     │   │   ├── event/
     │   │   │   ├── DestinationReachedEvent.java
+    │   │   │   ├── EtaDegradedEvent.java
     │   │   │   ├── EtaUpdatedEvent.java
     │   │   │   ├── IncidentActivatedEvent.java
+    │   │   │   ├── IncidentExpiredEvent.java
     │   │   │   ├── IncidentReportedEvent.java
     │   │   │   ├── LocationUpdatedEvent.java
-    │   │   │   └── RecalculateRouteRequested.java
-    │   │   └── policy/
-    │   │       ├── DestinationArrivalPolicy.java
-    │   │       ├── IncidentImpactPolicy.java
-    │   │       ├── RecalculationThrottlePolicy.java
-    │   │       └── RouteDeviationPolicy.java
+    │   │   │   ├── OptimizationFailedEvent.java
+    │   │   │   ├── RecalculateRouteRequested.java
+    │   │   │   ├── RouteChangedEvent.java
+    │   │   │   ├── RouteOptimizationRequested.java
+    │   │   │   ├── RouteRecalculatedEvent.java
+    │   │   │   ├── SegmentIncidentDisplayEvent.java
+    │   │   │   ├── SignalLostEvent.java
+    │   │   │   └── SignalRecoveredEvent.java
+    │   │   ├── exception/
+    │   │   │   ├── CacheException.java
+    │   │   │   ├── ConcurrencyLimitExceededException.java
+    │   │   │   ├── DomainException.java
+    │   │   │   ├── EventProcessingException.java
+    │   │   │   ├── GraphHopperException.java
+    │   │   │   ├── IncidentException.java
+    │   │   │   ├── OptimizationException.java
+    │   │   │   ├── RateLimitExceededException.java
+    │   │   │   ├── ResourceNotFoundException.java
+    │   │   │   ├── RoutingException.java
+    │   │   │   └── VehicleStateException.java
+    │   │   ├── policy/
+    │   │   │   ├── DestinationArrivalPolicy.java
+    │   │   │   ├── EtaUpdatePolicy.java
+    │   │   │   ├── IncidentEtaAdjuster.java
+    │   │   │   ├── IncidentImpactPolicy.java
+    │   │   │   ├── RecalculationThrottlePolicy.java
+    │   │   │   └── RouteDeviationPolicy.java
+    │   │   └── validator/
+    │   │       └── RouteRequestValidator.java
     │   │
     │   ├── application/
     │   │   ├── port/
     │   │   │   ├── in/
+    │   │   │   │   ├── CreateRouteRequestPort.java
     │   │   │   │   ├── ProcessLocationUpdatePort.java
     │   │   │   │   └── ReportIncidentPort.java
     │   │   │   └── out/
+    │   │   │       ├── DeadLetterPort.java
     │   │   │       ├── EventPublisher.java
+    │   │   │       ├── ExecutionEventStore.java
     │   │   │       ├── IncidentQueryPort.java
+    │   │   │       ├── LivePositionStore.java
+    │   │   │       ├── LocationDedupPort.java
+    │   │   │       ├── RateLimitPort.java
     │   │   │       └── VehicleStateStore.java
     │   │   └── usecase/
+    │   │       ├── CreateRouteRequestUseCase.java
+    │   │       ├── ExpireIncidentsUseCase.java
+    │   │       ├── FinalizeRouteUseCase.java
+    │   │       ├── InactivityDetectorJob.java
     │   │       ├── ProcessIncidentReportUseCase.java
-    │   │       └── ProcessLocationUpdateUseCase.java
+    │   │       ├── ProcessIncidentVoteUseCase.java
+    │   │       ├── ProcessLocationUpdateUseCase.java
+    │   │       └── RecalculateRouteUseCase.java
     │   │
     │   ├── engine/
     │   │   ├── eta/
-    │   │   │   └── EtaEngine.java              (EWMA, confidence, clamping; observedSpeedMps = LocationUpdatedEvent.payload.speedMps)
+    │   │   │   └── EtaEngine.java
     │   │   └── optimization/
-    │   │       ├── ParallelDistanceMatrix.java  (GH CH paralelo + k-nearest + fallback Haversine)
-    │   │       ├── GraphHopperSegmentRouter.java (rota por par → geometry, dist, duration)
-    │   │       └── (Christofides, Kruskal, TwoOpt - Sprint 3)
+    │   │       ├── model/
+    │   │       │   ├── Coordinate.java
+    │   │       │   ├── CoordinatesWithDistance.java
+    │   │       │   └── WaypointSequence.java
+    │   │       ├── mst/
+    │   │       │   ├── Graph.java
+    │   │       │   ├── KruskalSpanningTree.java
+    │   │       │   ├── NodeParents.java
+    │   │       │   ├── ResultDTO.java
+    │   │       │   └── SpanningTreeMaker.java
+    │   │       ├── tsp/
+    │   │       │   ├── ApproximateRouteCreator.java
+    │   │       │   ├── ApproximationAlgorithm.java
+    │   │       │   ├── ChristofidesRefactored.java
+    │   │       │   ├── ChristofidesVertex.java
+    │   │       │   ├── GreedyMatching.java
+    │   │       │   ├── TwoOptOptimizer.java
+    │   │       │   └── TwoThirdsApproximationRouteMaker.java
+    │   │       ├── matrix/
+    │   │       │   ├── DistanceCalculator.java
+    │   │       │   ├── DistanceMatrixCache.java
+    │   │       │   └── ParallelDistanceMatrix.java
+    │   │       ├── vrp/
+    │   │       │   ├── RouteAssigner.java
+    │   │       │   └── VRPClusterer.java
+    │   │       ├── routing/
+    │   │       │   └── GraphHopperSegmentRouter.java
+    │   │       └── orchestration/
+    │   │           ├── HybridRouteStrategy.java
+    │   │           └── ParallelRouteEngine.java
     │   │
     │   ├── infrastructure/
     │   │   ├── config/
-    │   │   │   ├── NatsConfig.java             (stream creation)
-    │   │   │   ├── GraphHopperConfig.java      (local .pbf vs S3 graph, CH profile)
-    │   │   │   ├── AwsConfig.java              (S3Client, credentials local vs IAM)
+    │   │   │   ├── AwsConfig.java
+    │   │   │   ├── GraphHopperConfig.java
+    │   │   │   ├── NatsConfig.java
+    │   │   │   ├── RateLimitConfig.java
     │   │   │   └── WebSocketConfig.java
     │   │   ├── nats/
-    │   │   │   ├── NatsEventPublisher.java      (implements EventPublisher)
-    │   │   │   └── NatsLocationListener.java    (JetStream push consumer)
+    │   │   │   ├── NatsDeadLetterPublisher.java
+    │   │   │   ├── NatsEventPublisher.java
+    │   │   │   ├── NatsIncidentListener.java
+    │   │   │   ├── NatsLocationListener.java
+    │   │   │   └── NatsRecalcListener.java
     │   │   ├── persistence/
     │   │   │   ├── entity/
+    │   │   │   │   ├── DeadLetterEventJpaEntity.java
+    │   │   │   │   ├── ExecutionEventJpaEntity.java
+    │   │   │   │   ├── IncidentImpactJpaEntity.java
     │   │   │   │   ├── IncidentJpaEntity.java
-    │   │   │   │   ├── OsmRoadEntity.java       (geo.osm_roads, LineString)
-    │   │   │   │   └── OsmPoiEntity.java        (geo.osm_pois, Point)
+    │   │   │   │   ├── IncidentVoteJpaEntity.java
+    │   │   │   │   ├── LivePositionJpaEntity.java
+    │   │   │   │   ├── OptimizationRunJpaEntity.java
+    │   │   │   │   ├── OsmAddressEntity.java
+    │   │   │   │   ├── OsmBoundaryEntity.java
+    │   │   │   │   ├── OsmBuildingEntity.java
+    │   │   │   │   ├── OsmPoiEntity.java
+    │   │   │   │   ├── OsmRoadEntity.java
+    │   │   │   │   ├── RouteConstraintJpaEntity.java
+    │   │   │   │   ├── RouteExecutionJpaEntity.java
+    │   │   │   │   ├── RouteOptimizationJpaEntity.java
+    │   │   │   │   ├── RoutePointJpaEntity.java
+    │   │   │   │   ├── RouteRequestJpaEntity.java
+    │   │   │   │   ├── RouteResultJpaEntity.java
+    │   │   │   │   ├── RouteSegmentJpaEntity.java
+    │   │   │   │   ├── RouteStopJpaEntity.java
+    │   │   │   │   ├── RouteWaypointJpaEntity.java
+    │   │   │   │   └── ...
+    │   │   │   ├── adapter/
+    │   │   │   │   ├── ExecutionEventStoreAdapter.java
+    │   │   │   │   └── LivePositionStoreAdapter.java
+    │   │   │   ├── mapper/
+    │   │   │   │   ├── ExecutionEventMapper.java
+    │   │   │   │   └── LivePositionMapper.java
     │   │   │   └── repository/
+    │   │   │       ├── DeadLetterEventRepository.java
+    │   │   │       ├── ExecutionEventRepository.java
     │   │   │       ├── IncidentRepository.java
-    │   │   │       ├── OsmRoadRepository.java   (PostGIS spatial queries)
-    │   │   │       └── OsmPoiRepository.java    (nearby POIs by amenity/radius)
+    │   │   │       ├── IncidentVoteRepository.java
+    │   │   │       ├── LivePositionRepository.java
+    │   │   │       ├── OsmAddressRepository.java
+    │   │   │       ├── OsmBoundaryRepository.java
+    │   │   │       ├── OsmPoiRepository.java
+    │   │   │       ├── OsmRoadRepository.java
+    │   │   │       ├── RouteExecutionRepository.java
+    │   │   │       ├── RouteOptimizationRepository.java
+    │   │   │       ├── RouteRequestRepository.java
+    │   │   │       ├── RouteResultRepository.java
+    │   │   │       ├── RouteSegmentRepository.java
+    │   │   │       ├── RouteStopRepository.java
+    │   │   │       ├── RouteWaypointRepository.java
+    │   │   │       └── ...
     │   │   └── redis/
-    │   │       └── RedisVehicleStateStore.java   (implements VehicleStateStore)
+    │   │       ├── RedisIncidentCache.java
+    │   │       ├── RedisLocationDedup.java
+    │   │       └── RedisVehicleStateStore.java
     │   │
     │   └── api/
     │       ├── rest/
-    │       │   └── IncidentController.java
+    │       │   ├── ErrorResponse.java
+    │       │   ├── GlobalExceptionHandler.java
+    │       │   ├── IncidentController.java
+    │       │   ├── LocationIngestionController.java
+    │       │   └── RouteRequestController.java
     │       └── websocket/
-    │           └── EtaWebSocketHandler.java
+    │           ├── EtaWebSocketHandler.java
+    │           └── IncidentAlertHandler.java
     │
     └── resources/
         ├── application.yml
@@ -148,7 +277,7 @@ skeleton/
 
 ## Para completar nas próximas sprints
 
-- Sprint 3: `engine/optimization/` (Christofides, Kruskal, TwoOpt, VRPClusterer)
+- Sprint 3: `engine/optimization/` já subdividido em `model/`, `mst/`, `tsp/`, `matrix/`, `vrp/`, `routing/`, `orchestration/` (Christofides, Kruskal, TwoOpt, VRPClusterer)
 - Sprint 4: Mais entidades JPA para route_*, repositórios correspondentes
 - Sprint 5: R-tree para projeção de corredor
 - Sprint 7: ForkJoinPool no engine, HybridRouteStrategy

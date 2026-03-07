@@ -6,17 +6,42 @@
 >
 > **Por que cada algoritmo (Kruskal, Edmonds Blossom, Christofides, 2-opt, VRPClusterer, ForkJoinPool)** está explicado no [doc 04 - Contexto OptimizationEngine](./04-Contexto-OptimizationEngine.md), seção *Por que cada algoritmo e otimização*.
 
+## 0. Estrutura de pacotes (`engine.optimization`)
+
+O código de otimização está subdividido por tipo/contexto:
+
+| Subpacote | Conteúdo |
+|-----------|----------|
+| `engine.optimization.model` | `Coordinate`, `CoordinatesWithDistance`, `WaypointSequence` (tipos compartilhados) |
+| `engine.optimization.mst` | `Graph`, `NodeParents`, `KruskalSpanningTree`, `SpanningTreeMaker`, `GreedyMatching`, `ResultDTO` |
+| `engine.optimization.tsp` | `ChristofidesRefactored`, `ChristofidesVertex`, `ApproximationAlgorithm`, `ApproximateRouteCreator`, `TwoThirdsApproximationRouteMaker`, `TwoOptOptimizer` |
+| `engine.optimization.matrix` | `DistanceCalculator`, `ParallelDistanceMatrix`, `DistanceMatrixCache` |
+| `engine.optimization.vrp` | `VRPClusterer`, `RouteAssigner` |
+| `engine.optimization.routing` | `GraphHopperSegmentRouter` |
+| `engine.optimization.orchestration` | `ParallelRouteEngine`, `HybridRouteStrategy` |
+
+Nas seções abaixo, cada trecho de código indica o subpacote correto.
+
 ## 1. Interfaces base
 
 ```java
-package com.example.routing.engine.optimization;
+// mst/SpanningTreeMaker.java
+package com.example.routing.engine.optimization.mst;
 
+import com.example.routing.engine.optimization.model.Coordinate;
 import java.util.List;
-import java.util.UUID;
 
 public interface SpanningTreeMaker {
     ResultDTO getTree(List<Coordinate> coordinates);
 }
+
+// tsp/ApproximationAlgorithm.java e tsp/ApproximateRouteCreator.java
+package com.example.routing.engine.optimization.tsp;
+
+import com.example.routing.engine.optimization.model.CoordinatesWithDistance;
+import com.example.routing.engine.optimization.model.WaypointSequence;
+import java.util.List;
+import java.util.UUID;
 
 public interface ApproximationAlgorithm {
     List<WaypointSequence> getRoute(List<CoordinatesWithDistance> spanningTree,
@@ -34,13 +59,12 @@ public interface ApproximateRouteCreator {
 ## 2. Modelos internos do engine
 
 ```java
-package com.example.routing.engine.optimization;
+// model/Coordinate.java, model/CoordinatesWithDistance.java, model/WaypointSequence.java
+package com.example.routing.engine.optimization.model;
 
 import com.example.routing.domain.enums.RouteType;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -70,11 +94,39 @@ public class WaypointSequence {
     private Integer sequence;
 }
 
+// mst/ResultDTO.java (usa model.CoordinatesWithDistance)
+// mst/NodeParents.java (usa model.Coordinate)
+package com.example.routing.engine.optimization.mst;
+
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.CoordinatesWithDistance;
+import lombok.*;
+import java.util.List;
+
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class ResultDTO {
     private List<CoordinatesWithDistance> coordinates;
     private Double totalDistance;
 }
+
+@Getter @Setter
+public class NodeParents {
+    private Coordinate parent;
+    private int rank;
+    public NodeParents(Coordinate parent, int rank) {
+        this.parent = parent;
+        this.rank = rank;
+    }
+}
+
+// tsp/ChristofidesVertex.java
+package com.example.routing.engine.optimization.tsp;
+
+import com.example.routing.engine.optimization.model.Coordinate;
+import lombok.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class ChristofidesVertex {
@@ -90,22 +142,16 @@ public class ChristofidesVertex {
     public UUID getId() { return coordinates.getId(); }
     public void addNeighbor(Coordinate c) { neighbors.add(c); }
 }
-
-@Getter @Setter
-public class NodeParents {
-    private Coordinate parent;
-    private int rank;
-    public NodeParents(Coordinate parent, int rank) {
-        this.parent = parent;
-        this.rank = rank;
-    }
-}
 ```
 
 ## 3. Graph (Kruskal support)
 
 ```java
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.mst;
+
+import com.example.routing.engine.optimization.matrix.DistanceCalculator;
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.CoordinatesWithDistance;
 
 import java.util.*;
 
@@ -146,7 +192,11 @@ public class Graph {
 ## 4. DistanceCalculator - O(1) por par
 
 ```java
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.matrix;
+
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.CoordinatesWithDistance;
+import com.example.routing.engine.optimization.model.WaypointSequence;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -200,8 +250,11 @@ public final class DistanceCalculator {
 ## 5. KruskalSpanningTree - O(n² log n)
 
 ```java
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.mst;
 
+import com.example.routing.engine.optimization.matrix.DistanceCalculator;
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.CoordinatesWithDistance;
 import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 
@@ -241,8 +294,12 @@ public class KruskalSpanningTree implements SpanningTreeMaker {
 ## 6. ChristofidesRefactored - Edmonds Blossom V (3/2-approx)
 
 ```java
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.tsp;
 
+import com.example.routing.engine.optimization.matrix.DistanceCalculator;
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.CoordinatesWithDistance;
+import com.example.routing.engine.optimization.model.WaypointSequence;
 import org.jgrapht.alg.matching.blossom.v5.KolmogorovMinimumWeightPerfectMatching;
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -344,7 +401,11 @@ public class ChristofidesRefactored implements ApproximationAlgorithm {
 ## 7. TwoOptOptimizer - O(n²) por iteração
 
 ```java
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.tsp;
+
+import com.example.routing.engine.optimization.matrix.DistanceCalculator;
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.WaypointSequence;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -394,7 +455,12 @@ public class TwoOptOptimizer {
 ## 8. TwoThirdsApproximationRouteMaker (orquestrador)
 
 ```java
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.tsp;
+
+import com.example.routing.engine.optimization.mst.ResultDTO;
+import com.example.routing.engine.optimization.mst.SpanningTreeMaker;
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.WaypointSequence;
 
 import java.util.List;
 import java.util.UUID;
@@ -435,7 +501,12 @@ public class TwoThirdsApproximationRouteMaker implements ApproximateRouteCreator
 ## 9. VRPClusterer + RouteAssigner
 
 ```java
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.vrp;
+
+import com.example.routing.engine.optimization.matrix.DistanceCalculator;
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.WaypointSequence;
+import com.example.routing.engine.optimization.tsp.ApproximateRouteCreator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -520,7 +591,14 @@ public class RouteAssigner {
 ## 10. ParallelRouteEngine + HybridRouteStrategy
 
 ```java
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.orchestration;
+
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.WaypointSequence;
+import com.example.routing.engine.optimization.tsp.ApproximateRouteCreator;
+import com.example.routing.engine.optimization.tsp.TwoOptOptimizer;
+import com.example.routing.engine.optimization.tsp.TwoThirdsApproximationRouteMaker;
+import com.example.routing.engine.optimization.vrp.VRPClusterer;
 
 import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;

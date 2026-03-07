@@ -36,9 +36,9 @@ Nenhum código de negócio está implementado ainda. O checklist indica **quem f
 - [ ] [E] Criar projeto Spring Boot 4.1.0-SNAPSHOT + Java 25 (`pom.xml` com dependências base: Spring Boot, Flyway, PostgreSQL, Redis, NATS; sem GraphHopper/JGraphT ainda)
 - [ ] [E] Docker Compose (`compose.yaml`: PostgreSQL/PostGIS, Redis, NATS) + `.gitignore`
 - [ ] [E] Habilitar extensões PostGIS no init do Postgres (`docker/postgres/init.sql`: `postgis`, `pg_trgm`)
-- [ ] [E] Estrutura de pacotes vazia por bounded context: `domain/` (enums, model, event, policy), `application/` (port/in, port/out, usecase), `engine/` (eta, optimization), `infrastructure/` (config, nats, persistence, redis), `api/` (rest, websocket)
+- [ ] [E] Estrutura de pacotes vazia por bounded context: `domain/` (enums, model, event, policy), `application/` (port/in, port/out, usecase), `engine/` (eta, optimization), `infrastructure/` (config, nats, persistence, redis), `api/` (rest, websocket). No skeleton: `skeleton/src/main/java/com/example/routing/`.
 - [ ] [E] `application.yml` com placeholders/conexões para PostgreSQL, Redis, NATS (e profile local)
-- [ ] [E] Classe principal `RoutingEngineApplication` + Flyway habilitado; pasta `resources/db/migration/` (pode ter um `V000__placeholder.sql` vazio ou um V001 mínimo para o app subir)
+- [ ] [E] Classe principal `RoutingEngineApplication` + Flyway habilitado; pasta `src/main/resources/db/migration/` (no skeleton: `skeleton/src/main/resources/db/migration/`; pode ter um `V000__placeholder.sql` vazio ou um V001 mínimo para o app subir)
 - [ ] [E] `NatsConfig.java` mínimo: criar streams/subjects no JetStream ao subir (conforme doc 11), para o app não falhar ao conectar
 
 **Mentorado implementa (código que agrega):**
@@ -48,7 +48,8 @@ Nenhum código de negócio está implementado ainda. O checklist indica **quem f
 - [ ] [M] `DomainException` e hierarquia de exceções (ex.: `RoutingException` abstrata)
 - [ ] [M] Flyway migrations V001–V004: tabelas de incident, route_*, execution_*, dead_letter, schema `geo` + tabelas OSM (doc 04C)
 - [ ] [M] Entidades JPA Geo: `OsmRoadEntity`, `OsmPoiEntity`, `OsmAddressEntity`, `OsmBoundaryEntity`, `OsmBuildingEntity` + repositórios
-- [ ] [M] Configs: `AwsConfig.java` (S3), `GraphHopperConfig.java` (local .pbf vs S3); adicionar no `pom.xml`: GraphHopper, Hibernate Spatial, AWS SDK v2, JGraphT
+- [ ] [E] Configs complexas: `AwsConfig.java` (S3Client, env vs DefaultCredentialsProvider), `GraphHopperConfig.java` (carregar grafo: .pbf local vs S3, perfil CH). Júnior normalmente não domina SDK AWS v2 nem API do GraphHopper; o especialista entrega ou faz em par.
+- [ ] [M] Adicionar no `pom.xml` as dependências GraphHopper, Hibernate Spatial, AWS SDK v2, JGraphT (versões e artefatos conforme doc 15 ou `skeleton/pom.xml`; júnior segue a lista para não errar versão, ex.: GraphHopper 9.1 no Central, sem `graphhopper-reader-osm` 9.1)
 - [ ] [M] CI/CD pipeline básico (build + test); `infra/osm2pgsql/osm2pgsql-flex.lua`; GitHub Actions import OSM; import inicial Brasil (.pbf) para PostGIS
 
 **Criterio de aceite**: `./mvnw verify` passa, conexões PG/Redis/NATS OK, tabelas `geo.*` existentes (populadas se fizer import OSM).

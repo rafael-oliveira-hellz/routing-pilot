@@ -1,4 +1,8 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.vrp;
+
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.WaypointSequence;
+import com.example.routing.engine.optimization.tsp.ApproximateRouteCreator;
 
 import java.util.ArrayList;
 import java.util.List;

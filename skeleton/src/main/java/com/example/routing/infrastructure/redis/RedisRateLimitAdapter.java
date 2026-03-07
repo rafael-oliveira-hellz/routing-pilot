@@ -1,24 +1,28 @@
-package com.example.routing.infrastructure.config;
-
-import com.example.routing.application.port.out.RateLimitPort;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
+package com.example.routing.infrastructure.redis;
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
+
+import com.example.routing.application.port.out.RateLimitPort;
+
 /**
- * Implementação do port de rate limit com Redis.
- * Trocar por Memcached/etc. = nova implementação de {@link RateLimitPort}.
+ * Implementação de {@link RateLimitPort} com Redis.
+ * Backend de rate limit é escolhido por {@code routing.rate-limit.backend} (ex.: redis, memcached).
+ * Para trocar para Memcached: defina {@code routing.rate-limit.backend=memcached} e registre um adapter Memcached.
  */
 @Component
-public class RateLimitConfig implements RateLimitPort {
+@ConditionalOnProperty(name = "routing.rate-limit.backend", havingValue = "redis", matchIfMissing = true)
+public class RedisRateLimitAdapter implements RateLimitPort {
 
     private final StringRedisTemplate redis;
     private final int maxPerVehiclePerSecond;
     private final int incidentMaxPerMinute;
 
-    public RateLimitConfig(
+    public RedisRateLimitAdapter(
             StringRedisTemplate redis,
             @Value("${routing.ingestion.rate-limit-per-vehicle-per-second:20}") int maxPerVehiclePerSecond,
             @Value("${routing.incident.rate-limit-per-minute:5}") int incidentMaxPerMinute) {
@@ -27,17 +31,13 @@ public class RateLimitConfig implements RateLimitPort {
         this.incidentMaxPerMinute = incidentMaxPerMinute;
     }
 
-    /**
-     * Returns true if the request should be rate-limited (rejected).
-     */
+    @Override
     public boolean isLocationRateLimited(String vehicleId) {
         String key = "ratelimit:loc:" + vehicleId;
         return checkAndIncrement(key, Duration.ofSeconds(1), maxPerVehiclePerSecond);
     }
 
-    /**
-     * Returns true if the incident report should be rate-limited (rejected).
-     */
+    @Override
     public boolean isIncidentRateLimited(String userId) {
         String key = "ratelimit:incident:" + userId;
         return checkAndIncrement(key, Duration.ofMinutes(1), incidentMaxPerMinute);

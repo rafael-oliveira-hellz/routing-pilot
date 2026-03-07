@@ -1,4 +1,4 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.model;
 
 import com.example.routing.domain.enums.RouteType;
 import lombok.*;

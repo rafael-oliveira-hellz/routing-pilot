@@ -1,4 +1,4 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.model;
 
 import lombok.*;
 

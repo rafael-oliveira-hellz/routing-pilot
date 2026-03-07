@@ -50,7 +50,7 @@ O mesmo padrão vale para mensageria, cache, dedup e rate limit: **application/A
 | `DeadLetterPort` | Publicar em DLQ | `NatsDeadLetterPublisher` | Nova implementação (ex.: `KafkaDeadLetterPublisher`) |
 | `VehicleStateStore` | Estado do veículo | `RedisVehicleStateStore` | Nova implementação (ex.: `MemcachedVehicleStateStore`) |
 | `LocationDedupPort` | Dedup de posição | `RedisLocationDedup` | Nova implementação (ex.: `MemcachedLocationDedup`) |
-| `RateLimitPort` | Rate limiting | `RateLimitConfig` (Redis) | Nova implementação (ex.: Memcached) |
+| `RateLimitPort` | Rate limiting | `RedisRateLimitAdapter` (default); backend via `routing.rate-limit.backend` | Nova implementação (ex.: `MemcachedRateLimitAdapter`) + config |
 | `IncidentQueryPort` | Consulta incidentes | (implementação pode usar cache Redis) | Nova implementação do port |
 
 **Listeners (NATS → Kafka):** os listeners atuais (`NatsLocationListener`, etc.) subscrevem ao NATS e chamam os use cases. Para usar Kafka, crie **novos listeners** (ex.: `KafkaLocationListener`) que subscrevem ao Kafka e chamam os **mesmos** ports de entrada (`ProcessLocationUpdatePort`, etc.). Domain e application permanecem iguais.

@@ -1,9 +1,10 @@
+# Pilot: pacote principal da aplicação = com.infocaltechnologies.pilot (classe PilotApplication).
 # Datasource, Redis e NATS usam variáveis de ambiente. Defaults = localhost (dev/compose com app no host).
 # Em produção: defina DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD, REDIS_HOST, REDIS_PORT, NATS_SERVER.
 # Se o app rodar dentro do mesmo compose (rede Docker): DB_HOST=postgres, REDIS_HOST=redis, NATS_SERVER=nats://nats:4222
 spring:
   application:
-    name: routing-engine
+    name: pilot-routing-engine
 
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:routing}
@@ -116,4 +117,4 @@ management:
         include: health,info,prometheus,metrics
   metrics:
     tags:
-      application: routing-engine
+      application: pilot-routing-engine

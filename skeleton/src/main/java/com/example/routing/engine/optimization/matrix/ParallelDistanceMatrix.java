@@ -1,5 +1,6 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.matrix;
 
+import com.example.routing.engine.optimization.model.Coordinate;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GraphHopper;
 import lombok.RequiredArgsConstructor;

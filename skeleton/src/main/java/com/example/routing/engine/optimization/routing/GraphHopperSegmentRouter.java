@@ -1,5 +1,7 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.routing;
 
+import com.example.routing.engine.optimization.matrix.DistanceCalculator;
+import com.example.routing.engine.optimization.model.Coordinate;
 import com.graphhopper.GHRequest;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.ResponsePath;

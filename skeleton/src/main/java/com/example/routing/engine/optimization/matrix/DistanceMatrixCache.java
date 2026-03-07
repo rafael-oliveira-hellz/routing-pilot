@@ -1,5 +1,6 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.matrix;
 
+import com.example.routing.engine.optimization.model.Coordinate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;

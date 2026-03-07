@@ -1,4 +1,7 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.tsp;
+
+import com.example.routing.engine.optimization.model.CoordinatesWithDistance;
+import com.example.routing.engine.optimization.model.WaypointSequence;
 
 import java.util.List;
 import java.util.UUID;

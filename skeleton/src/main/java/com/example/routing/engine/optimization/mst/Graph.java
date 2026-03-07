@@ -1,4 +1,8 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.mst;
+
+import com.example.routing.engine.optimization.matrix.DistanceCalculator;
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.CoordinatesWithDistance;
 
 import java.util.*;
 

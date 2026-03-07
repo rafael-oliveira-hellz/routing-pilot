@@ -1,5 +1,8 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.mst;
 
+import com.example.routing.engine.optimization.matrix.DistanceCalculator;
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.CoordinatesWithDistance;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;

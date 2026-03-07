@@ -1,4 +1,8 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.matrix;
+
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.CoordinatesWithDistance;
+import com.example.routing.engine.optimization.model.WaypointSequence;
 
 import java.util.ArrayList;
 import java.util.List;

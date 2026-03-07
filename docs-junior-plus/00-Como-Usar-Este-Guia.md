@@ -66,6 +66,7 @@ Os dois cobrem a mesma jornada (do zero ao Júnior+, por Sprints), mas em **form
 | Ter um passo a passo por Sprint (resumido) | [04 - Trilha prática](./04-Trilha-Pratica-Junior-Plus.md) — roteiro por Sprint. |
 | Ter tasks numeradas do zero ao Júnior+ (completas) | [07 - Tasks passo a passo](./07-Tasks-Passo-a-Passo-Junior-Plus.md) — use **04 ou 07**, não os dois em paralelo. |
 | Evitar erros comuns e tirar dúvidas rápidas | [05 - FAQ](./05-FAQ-e-Armadilhas-Comuns.md) |
+| Padrão de mensagens de commit (commit semântico) | [08 - Padrão de commit](./08-Padrao-Commit-Semantico.md) |
 | Detalhes de implementação (NATS, algoritmos, contratos) | `docs/` (ex.: 01, 02, 03, 11, 15) |
 
 ## Dica

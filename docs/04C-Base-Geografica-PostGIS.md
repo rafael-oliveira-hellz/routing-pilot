@@ -1140,6 +1140,9 @@ Dia 1 do mês 05:00 →  GitHub Actions: osm-postgis-full-import.yml
 
 ## 10. Estrutura de arquivos no repositório
 
+- **Módulo skeleton:** código em `skeleton/src/main/java/com/example/routing/`; migrations em `skeleton/src/main/resources/db/migration/`.
+- **Módulo pilot:** código em `pilot/src/main/java/com/infocaltechnologies/pilot/`; migrations em `pilot/src/main/resources/db/migration/`.
+
 ```text
 infra/
 ├── osm2pgsql/
@@ -1155,6 +1158,8 @@ infra/
 │   ├── graphhopper-build.yml           # Build grafo CH → S3 (semanal)
 │   ├── osm-postgis-full-import.yml     # Orquestrador: .pbf → S3 → CodeBuild → RDS (mensal)
 │   └── osm-postgis-diff.yml            # Orquestrador: diff → S3 → CodeBuild → RDS (semanal)
-src/main/resources/db/migration/
+skeleton/src/main/resources/db/migration/
 │   └── V004__create_osm_geographic_tables.sql
+pilot/src/main/resources/db/migration/
+│   └── (migrations do pilot, se houver)
 ```

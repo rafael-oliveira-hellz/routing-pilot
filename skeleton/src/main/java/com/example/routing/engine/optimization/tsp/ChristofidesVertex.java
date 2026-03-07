@@ -1,5 +1,6 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.tsp;
 
+import com.example.routing.engine.optimization.model.Coordinate;
 import lombok.*;
 
 import java.util.ArrayList;

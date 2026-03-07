@@ -18,7 +18,7 @@ Referência rápida: **onde está cada tema** na documentação e no código.
 └── (outros: DDD_Route_Architecture_Full_Model.xlsx, etc.)
 ```
 
-O código principal do motor de roteamento pode estar em `pilot/` ou em outra pasta de módulos; o Checklist em `docs/14-Checklist-Sprints.md` e o `docs/15-Skeleton-Java.md` referenciam pacotes como `com.example.routing`.
+O código principal do motor de roteamento pode estar em `pilot/` ou no **skeleton**. No skeleton, o código fica em **`skeleton/src/main/java/com/example/routing/`** (pacote `com.example.routing`). O Checklist em `docs/14-Checklist-Sprints.md` e o `docs/15-Skeleton-Java.md` descrevem essa estrutura de pastas e pacotes.
 
 ---
 
@@ -55,7 +55,7 @@ Com base no `docs/15-Skeleton-Java.md` e no Checklist:
 |------------------|--------|---------------------------|
 | Value objects, eventos, policies | `domain/` | `GeoPoint`, `EtaState`, `LocationUpdatedEvent`, `RouteDeviationPolicy` |
 | Casos de uso, portas | `application/` | `ProcessLocationUpdateUseCase`, `CreateRouteRequestUseCase`, `EventPublisher`, `VehicleStateStore` |
-| Algoritmos (ETA, otimização) | `engine/` | `EtaEngine`, `ParallelRouteEngine`, `GraphHopperSegmentRouter` |
+| Algoritmos (ETA, otimização) | `engine/` | `EtaEngine`; em `engine/optimization/`: subpacotes `model/`, `mst/`, `tsp/`, `matrix/`, `vrp/`, `routing/`, `orchestration/` (ex.: `ParallelRouteEngine`, `GraphHopperSegmentRouter`, Christofides, Kruskal) |
 | NATS, Redis, JPA, config | `infrastructure/` | `NatsConfig`, `NatsLocationListener`, `RedisVehicleStateStore`, repositórios JPA |
 | REST, WebSocket | `api/` | `RouteRequestController`, `LocationIngestionController`, `EtaWebSocketHandler` |
 | Migrations | `resources/db/migration/` | `V001__...sql` a `V004__...sql` |

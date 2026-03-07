@@ -1,4 +1,11 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.orchestration;
+
+import com.example.routing.engine.optimization.model.Coordinate;
+import com.example.routing.engine.optimization.model.WaypointSequence;
+import com.example.routing.engine.optimization.tsp.ApproximateRouteCreator;
+import com.example.routing.engine.optimization.tsp.TwoOptOptimizer;
+import com.example.routing.engine.optimization.tsp.TwoThirdsApproximationRouteMaker;
+import com.example.routing.engine.optimization.vrp.VRPClusterer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +16,8 @@ public class HybridRouteStrategy {
     private static final int DEFAULT_CLUSTER_SIZE = 150;
 
     public static List<WaypointSequence> solve(List<Coordinate> points,
-                                               UUID startId, UUID destId,
-                                               ApproximateRouteCreator creator) {
+                                             UUID startId, UUID destId,
+                                             ApproximateRouteCreator creator) {
         if (points.size() <= 300) return TwoOptOptimizer.optimize(creator.calculateRoute(points, startId, destId));
         int cs = Math.min(DEFAULT_CLUSTER_SIZE, (int) Math.ceil(Math.sqrt(points.size() * 50)));
         var clusters = VRPClusterer.clusterByProximity(points, cs, startId, destId);

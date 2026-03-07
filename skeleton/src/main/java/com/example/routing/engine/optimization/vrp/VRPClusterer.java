@@ -1,4 +1,7 @@
-package com.example.routing.engine.optimization;
+package com.example.routing.engine.optimization.vrp;
+
+import com.example.routing.engine.optimization.matrix.DistanceCalculator;
+import com.example.routing.engine.optimization.model.Coordinate;
 
 import java.util.*;
 import java.util.stream.Collectors;
