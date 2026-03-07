@@ -17,6 +17,16 @@ flutter pub get
 flutter run
 ```
 
+### Rodar localmente (backend na sua máquina)
+
+Ambientes: **local** | dev | staging | prod. Por padrão o app usa `ENV=local` e `BASE_URL=http://10.0.2.2:8080` (emulador Android / Android Studio).
+
+1. **Crie o `.env`** (se ainda não existir): `cp .env.example .env`
+2. Suba o backend (pilot) na sua máquina e depois: `flutter run` (no Android Studio ou `flutter run` no emulador).
+3. Se rodar em **iOS** ou **Chrome**, altere no `.env`: `BASE_URL=http://localhost:8080`
+
+Se o `.env` não existir, o app inicia em **local** com `BASE_URL=http://10.0.2.2:8080` (pronto para Android Studio).
+
 ## Documento principal: TODO por sprint
 
 O arquivo **`docs/TODO-SPRINTS.md`** contém:
@@ -42,4 +52,4 @@ flutter test
 
 ## Backend
 
-Este app consome as APIs e WebSockets do projeto **pilot** (backend Spring Boot). Certifique-se de que o backend está rodando e que a `baseUrl` em `lib/core/config/app_config.dart` (ou via env) aponta para o servidor correto.
+Este app consome as APIs e WebSockets do projeto **pilot** (backend Spring Boot). A URL da API é definida no `.env` (`BASE_URL`). Padrão local: `http://10.0.2.2:8080` (Android Studio/emulador). Para iOS ou Chrome: `http://localhost:8080`.
