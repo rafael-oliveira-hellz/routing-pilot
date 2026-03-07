@@ -52,6 +52,8 @@ dependencies:
   # Sprint 7+: buffer offline
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  crypto: ^3.0.3
+  intl: any
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +71,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

@@ -1,4 +1,6 @@
 import 'package:get_it/get_it.dart';
+import 'package:pilot_app/core/config/theme_mode_notifier.dart';
+import 'package:pilot_app/core/config/theme_mode_prefs.dart';
 import 'package:pilot_app/core/network/api_client.dart';
 import 'package:pilot_app/core/security/remember_me_prefs.dart';
 import 'package:pilot_app/core/security/secure_token_storage.dart';
@@ -27,6 +29,10 @@ import 'package:pilot_app/features/incidents/domain/incident_repository.dart';
 final GetIt serviceLocator = GetIt.instance;
 
 Future<void> configureDependencies() async {
+  serviceLocator.registerLazySingleton<ThemeModePrefs>(() => ThemeModePrefs());
+  serviceLocator.registerLazySingleton<ThemeModeNotifier>(() => ThemeModeNotifier(
+        serviceLocator<ThemeModePrefs>(),
+      ));
   serviceLocator.registerLazySingleton<SecureTokenStorage>(() => SecureTokenStorage());
   serviceLocator.registerLazySingleton<RememberMePrefs>(() => RememberMePrefs());
   serviceLocator.registerLazySingleton<AuthRemote>(() => AuthRemote());

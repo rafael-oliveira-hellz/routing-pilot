@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:pilot_app/core/di/injection.dart';
 import 'package:pilot_app/core/domain/dto/route_dto.dart';
 import 'package:pilot_app/core/error/pilot_exception.dart';
+import 'package:pilot_app/features/route_planning/data/route_history_local.dart';
 import 'package:pilot_app/features/route_planning/domain/route_repository.dart';
+import 'package:pilot_app/l10n/app_localizations.dart';
 
 /// Tela "Nova rota": origem, destino, paradas (até 1000), constraints, partida. APP-2002.
 class NewRoutePage extends StatefulWidget {
@@ -27,10 +29,53 @@ class _NewRoutePageState extends State<NewRoutePage> {
   DateTime? _departureAt;
   bool _loading = false;
   String? _errorMessage;
+  bool _hasLastRequest = false;
+
+  @override
+  void initState() {
+    super.initState();
+    RouteHistoryLocal.getLastRequest().then((last) {
+      if (mounted) setState(() => _hasLastRequest = last != null);
+    });
+  }
 
   static double? _parseDouble(String? v) {
     if (v == null || v.trim().isEmpty) return null;
     return double.tryParse(v.trim().replaceAll(',', '.'));
+  }
+
+  Future<void> _fillFromLastRequest() async {
+    final last = await RouteHistoryLocal.getLastRequest();
+    if (last == null || !mounted) return;
+    final r = last.request;
+    if (r.points.length >= 2) {
+      _originLat.text = r.points[0].latitude.toString();
+      _originLon.text = r.points[0].longitude.toString();
+      _destLat.text = r.points[1].latitude.toString();
+      _destLon.text = r.points[1].longitude.toString();
+    }
+    while (_stops.isNotEmpty) {
+      final s = _stops.removeLast();
+      s.lat.dispose();
+      s.lon.dispose();
+    }
+    _stopId = 0;
+    for (final s in r.stops) {
+      _stopId++;
+      _stops.add((
+        id: _stopId,
+        lat: TextEditingController(text: s.latitude.toString()),
+        lon: TextEditingController(text: s.longitude.toString()),
+      ));
+    }
+    if (r.constraints != null) {
+      _avoidTolls = r.constraints!.avoidTolls;
+      _avoidTunnels = r.constraints!.avoidTunnels;
+      _maxDurationSec = r.constraints!.maxDurationSeconds?.toString();
+      _maxDistanceM = r.constraints!.maxDistanceMeters?.toString();
+    }
+    _departureAt = r.departureAt;
+    if (mounted) setState(() {});
   }
 
   bool _validCoord(double? v, bool isLat) {
@@ -132,9 +177,12 @@ class _NewRoutePageState extends State<NewRoutePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final l10n = AppLocalizations.of(context);
+    return Semantics(
+      label: 'Nova rota. Informe origem, destino e paradas.',
+      child: Scaffold(
       appBar: AppBar(
-        title: const Text('Nova rota'),
+        title: Text(l10n.newRoute),
         centerTitle: true,
       ),
       body: Column(
@@ -153,7 +201,16 @@ class _NewRoutePageState extends State<NewRoutePage> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text('Origem', style: Theme.of(context).textTheme.titleSmall),
+                if (_hasLastRequest)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: OutlinedButton.icon(
+                      onPressed: _loading ? null : _fillFromLastRequest,
+                      icon: const Icon(Icons.history),
+                      label: Text(l10n.fillLastRoute),
+                    ),
+                  ),
+                Text(l10n.origin, style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -175,7 +232,7 @@ class _NewRoutePageState extends State<NewRoutePage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text('Destino', style: Theme.of(context).textTheme.titleSmall),
+                Text(l10n.destination, style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -200,7 +257,7 @@ class _NewRoutePageState extends State<NewRoutePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Paradas (máx. 1000)', style: Theme.of(context).textTheme.titleSmall),
+                    Text(l10n.stops, style: Theme.of(context).textTheme.titleSmall),
                     TextButton.icon(
                       onPressed: _stops.length >= 1000
                           ? null
@@ -210,7 +267,7 @@ class _NewRoutePageState extends State<NewRoutePage> {
                                 lon: TextEditingController(text: ''),
                               ))),
                       icon: const Icon(Icons.add),
-                      label: const Text('Adicionar'),
+                      label: Text(l10n.add),
                     ),
                   ],
                 ),
@@ -326,7 +383,7 @@ class _NewRoutePageState extends State<NewRoutePage> {
                   icon: _loading
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.route),
-                  label: Text(_loading ? 'Calculando...' : 'Calcular rota'),
+                  label: Text(_loading ? l10n.calculating : l10n.calculateRoute),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
@@ -335,6 +392,7 @@ class _NewRoutePageState extends State<NewRoutePage> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

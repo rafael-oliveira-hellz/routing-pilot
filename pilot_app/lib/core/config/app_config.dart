@@ -85,6 +85,15 @@ class AppConfig {
   static bool get isMockEnabled => _isMockEnabled;
   static bool _isMockEnabled = false;
 
+  /// Certificate pinning em produção (opcional). Quando true, Dio valida certificado contra hash em env.
+  /// Requer CERT_PIN_SHA256 no .env (hash do certificado). APP-8002.
+  static bool get enableCertificatePinning => _enableCertificatePinning;
+  static bool _enableCertificatePinning = false;
+
+  /// Hash SHA-256 do certificado para pinning (hex). Só usado se enableCertificatePinning == true.
+  static String? get certificatePinSha256 => _certificatePinSha256;
+  static String? _certificatePinSha256;
+
   static Future<void> ensureInitialized() async {
     if (_initialized) return;
     try {
@@ -100,6 +109,8 @@ class AppConfig {
           (_env == AppEnv.local ? _defaultLocalBaseUrl : _baseUrl);
       _googleMapsApiKey = dotenv.env['GOOGLE_MAPS_API_KEY']?.trim();
       _isMockEnabled = dotenv.env['isMockEnabled']?.toLowerCase() == 'true';
+      _enableCertificatePinning = dotenv.env['ENABLE_CERTIFICATE_PINNING']?.toLowerCase() == 'true';
+      _certificatePinSha256 = dotenv.env['CERT_PIN_SHA256']?.trim();
     } catch (_) {
       // .env ausente: usar local com default para rodar localmente
       _env = AppEnv.local;

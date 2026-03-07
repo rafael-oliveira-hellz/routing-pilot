@@ -4,6 +4,7 @@ import 'package:pilot_app/core/di/injection.dart';
 import 'package:pilot_app/core/domain/dto/auth_dto.dart';
 import 'package:pilot_app/core/error/pilot_exception.dart';
 import 'package:pilot_app/features/auth/domain/auth_repository.dart';
+import 'package:pilot_app/l10n/app_localizations.dart';
 
 /// Tela de login: email, senha, Lembrar de mim; POST /api/v1/auth/login.
 class LoginPage extends StatefulWidget {
@@ -66,12 +67,15 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final message = GoRouterState.of(context).uri.queryParameters['message'];
     final showResetOk = message == 'reset_ok';
 
-    return Scaffold(
+    return Semantics(
+      label: 'Tela de login. Campos de e-mail e senha.',
+      child: Scaffold(
       appBar: AppBar(
-        title: const Text('Entrar'),
+        title: Text(l10n.loginTitle),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -175,18 +179,19 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => context.go('/forgot-password'),
-                    child: const Text('Esqueci a senha'),
+                    child: Text(l10n.forgotPassword),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => context.go('/register'),
-                  child: const Text('Criar conta'),
+                  child: Text(l10n.registerTitle),
                 ),
               ],
             ),
           ),
         ),
+      ),
       ),
     );
   }

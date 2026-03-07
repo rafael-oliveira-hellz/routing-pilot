@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pilot_app/core/error/pilot_exception.dart';
+import 'package:pilot_app/l10n/app_localizations.dart';
 
 /// Tela de erro genérica com traceId para suporte. APP-8001, APP-8002.
 class ErrorPage extends StatelessWidget {
@@ -18,8 +19,9 @@ class ErrorPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Erro')),
+      appBar: AppBar(title: Text(l10n.errorPageTitle)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -43,7 +45,7 @@ class ErrorPage extends StatelessWidget {
                 Semantics(
                   label: 'Código de rastreio para suporte',
                   child: SelectableText(
-                    'Código: $traceId',
+                    l10n.supportCode(traceId!),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontFamily: 'monospace',
                         ),

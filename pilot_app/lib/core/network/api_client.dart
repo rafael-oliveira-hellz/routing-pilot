@@ -1,12 +1,17 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:pilot_app/core/config/app_config.dart';
 import 'package:pilot_app/core/error/pilot_exception.dart';
 import 'package:pilot_app/core/network/error_response.dart';
+import 'package:pilot_app/core/security/certificate_pinning.dart';
 import 'package:pilot_app/core/utils/trace_id.dart';
 
 /// Cliente HTTP Dio com interceptors: Bearer, X-Trace-Id, timeout.
 /// Em 401: tenta on401Retry (refresh); se sucesso reenvia a requisição; senão on401 (logout).
 /// Tratamento de 429 (Retry-After), 503 (NetworkException). Não logar tokens.
+/// Certificate pinning opcional via AppConfig.enableCertificatePinning e CERT_PIN_SHA256. APP-8002.
 class ApiClient {
   ApiClient({
     required this.getAccessToken,
@@ -20,6 +25,13 @@ class ApiClient {
     _dio.options.sendTimeout = AppConfig.httpTimeout;
     _dio.options.headers['Content-Type'] = 'application/json';
     _dio.options.headers['Accept'] = 'application/json';
+    if (AppConfig.enableCertificatePinning && AppConfig.certificatePinSha256 != null) {
+      _dio.httpClientAdapter = IOHttpClientAdapter(createHttpClient: () {
+        final client = HttpClient();
+        client.badCertificateCallback = validateCertificatePinning;
+        return client;
+      });
+    }
     _dio.interceptors.add(_authInterceptor());
     _dio.interceptors.add(_traceIdInterceptor());
     _dio.interceptors.add(_errorInterceptor());

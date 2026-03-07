@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:pilot_app/core/config/app_config.dart';
 import 'package:pilot_app/core/di/injection.dart';
+import 'package:pilot_app/core/utils/polyline_simplify.dart';
 import 'package:pilot_app/core/domain/dto/eta_event_dto.dart';
 import 'package:pilot_app/core/domain/enums/domain_enums.dart';
 import 'package:pilot_app/core/security/jwt_parser.dart';
@@ -289,6 +290,18 @@ class _EnRotaPageState extends State<EnRotaPage> {
                 ),
               ),
             ),
+          if (_vehicleStatus == VehicleStatus.failed || _vehicleStatus == VehicleStatus.stopped)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: FilledButton.icon(
+                onPressed: () {
+                  setState(() => _error = null);
+                  _loadRouteAndStartTracking();
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('Tentar novamente'),
+              ),
+            ),
           Expanded(child: _buildMap(polyline)),
         ],
       ),
@@ -381,7 +394,11 @@ class _EnRotaPageState extends State<EnRotaPage> {
         ),
         if (polyline.length >= 2)
           PolylineLayer(polylines: [
-            Polyline(points: polyline, color: Colors.blue, strokeWidth: 4),
+            Polyline(
+              points: simplifyPolylineForDisplay(polyline),
+              color: Colors.blue,
+              strokeWidth: 4,
+            ),
           ]),
         MarkerLayer(markers: markers),
       ],

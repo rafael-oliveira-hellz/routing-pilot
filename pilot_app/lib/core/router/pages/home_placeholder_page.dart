@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pilot_app/core/config/theme_mode_notifier.dart';
 import 'package:pilot_app/core/di/injection.dart';
 import 'package:pilot_app/features/auth/domain/auth_repository.dart';
+import 'package:pilot_app/l10n/app_localizations.dart';
 
 /// Placeholder da tela inicial até a implementação da home real (pós-login).
-/// Menu Administração só visível para role == ADMIN. APP-1007.
+/// Menu Administração só visível para role == ADMIN. APP-1007. Tema claro/escuro. APP-1008.
 class HomePlaceholderPage extends StatefulWidget {
   const HomePlaceholderPage({super.key});
 
@@ -23,55 +25,79 @@ class _HomePlaceholderPageState extends State<HomePlaceholderPage> {
     });
   }
 
+  void _showThemeMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final notifier = serviceLocator<ThemeModeNotifier>();
+    showMenu<ThemeMode>(
+      context: context,
+      position: const RelativeRect.fromLTRB(1, 80, 0, 0),
+      items: [
+        PopupMenuItem(value: ThemeMode.light, child: Text(l10n.light)),
+        PopupMenuItem(value: ThemeMode.dark, child: Text(l10n.dark)),
+        PopupMenuItem(value: ThemeMode.system, child: Text(l10n.system)),
+      ],
+    ).then((mode) {
+      if (mode != null) notifier.setThemeMode(mode);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pilot'),
+    final l10n = AppLocalizations.of(context)!;
+    return Semantics(
+      label: 'Tela inicial Pilot. Navegação para nova rota, incidentes, administração e configurações.',
+      child: Scaffold(
+        appBar: AppBar(
+        title: Text(l10n.appTitle),
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.brightness_6),
+            tooltip: l10n.themeToggle,
+            onPressed: () => _showThemeMenu(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.add_road),
-            tooltip: 'Nova rota',
+            tooltip: l10n.newRoute,
             onPressed: () => GoRouter.of(context).go('/routes/new'),
           ),
           IconButton(
             icon: const Icon(Icons.warning_amber),
-            tooltip: 'Incidentes próximos',
+            tooltip: l10n.incidentsNearby,
             onPressed: () => GoRouter.of(context).go('/incidents'),
           ),
           IconButton(
             icon: const Icon(Icons.report),
-            tooltip: 'Reportar incidente',
+            tooltip: l10n.reportIncident,
             onPressed: () => GoRouter.of(context).go('/incidents/report'),
           ),
           if (_isAdmin == true)
             IconButton(
               icon: const Icon(Icons.people),
-              tooltip: 'Administração — Usuários',
+              tooltip: l10n.adminUsers,
               onPressed: () => GoRouter.of(context).go('/admin/users'),
             ),
           IconButton(
             icon: const Icon(Icons.security),
-            tooltip: 'Segurança e sessões',
+            tooltip: l10n.security,
             onPressed: () => GoRouter.of(context).go('/security'),
           ),
           IconButton(
             icon: const Icon(Icons.lock_reset),
-            tooltip: 'Alterar senha',
+            tooltip: l10n.changePassword,
             onPressed: () => GoRouter.of(context).go('/change-password'),
           ),
           IconButton(
             icon: const Icon(Icons.logout),
-            tooltip: 'Sair',
+            tooltip: l10n.logout,
             onPressed: () async {
               await serviceLocator<AuthRepository>().logout();
               if (context.mounted) GoRouter.of(context).go('/login');
             },
           ),
         ],
-      ),
-      body: Center(
+        ),
+        body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -108,6 +134,7 @@ class _HomePlaceholderPageState extends State<HomePlaceholderPage> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

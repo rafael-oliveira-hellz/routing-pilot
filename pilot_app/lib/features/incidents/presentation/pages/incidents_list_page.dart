@@ -18,13 +18,23 @@ class IncidentsListPage extends StatefulWidget {
   State<IncidentsListPage> createState() => _IncidentsListPageState();
 }
 
+const List<double> _radiusOptions = [500, 1000, 2000, 5000];
+const List<String> _typeOptions = [
+  'Todos',
+  'BLITZ', 'ACCIDENT', 'HEAVY_TRAFFIC', 'WET_ROAD', 'FLOOD', 'ROAD_WORK',
+  'BROKEN_TRAFFIC_LIGHT', 'ANIMAL_ON_ROAD', 'VEHICLE_STOPPED', 'LANDSLIDE', 'FOG', 'OTHER',
+];
+const List<String> _severityOptions = ['Todas', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+
 class _IncidentsListPageState extends State<IncidentsListPage> {
   List<IncidentListItemDto> _items = [];
   final Set<String> _expiredIds = {};
   LatLng? _center;
-  final double _radiusMeters = 2000;
+  double _radiusMeters = 2000;
   bool _loading = false;
   String? _error;
+  String? _filterType; // null = Todos
+  String? _filterSeverity; // null = Todas
   StreamSubscription<IncidentActivatedEventDto>? _activatedSub;
   StreamSubscription<IncidentExpiredEventDto>? _expiredSub;
 
@@ -71,6 +81,19 @@ class _IncidentsListPageState extends State<IncidentsListPage> {
     }
   }
 
+  Future<void> _refetchWithRadius(double radius) async {
+    await _fetch();
+    if (mounted && _center != null) {
+      final ws = serviceLocator<IncidentWsClient>();
+      ws.disconnect();
+      await ws.connect(
+        lat: _center!.latitude,
+        lon: _center!.longitude,
+        radiusMeters: radius,
+      );
+    }
+  }
+
   void _subscribeWs() {
     final ws = serviceLocator<IncidentWsClient>();
     _activatedSub = ws.activatedStream.listen((event) {
@@ -107,8 +130,16 @@ class _IncidentsListPageState extends State<IncidentsListPage> {
     super.dispose();
   }
 
-  List<IncidentListItemDto> get _visibleItems =>
-      _items.where((e) => !_expiredIds.contains(e.id)).toList();
+  List<IncidentListItemDto> get _visibleItems {
+    var list = _items.where((e) => !_expiredIds.contains(e.id)).toList();
+    if (_filterType != null && _filterType!.isNotEmpty && _filterType != 'Todos') {
+      list = list.where((e) => e.incidentType.toUpperCase() == _filterType).toList();
+    }
+    if (_filterSeverity != null && _filterSeverity!.isNotEmpty && _filterSeverity != 'Todas') {
+      list = list.where((e) => e.severity?.toUpperCase() == _filterSeverity).toList();
+    }
+    return list;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +163,57 @@ class _IncidentsListPageState extends State<IncidentsListPage> {
               padding: const EdgeInsets.all(8),
               child: Text(_error!, style: TextStyle(color: Colors.red.shade700)),
             ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _filterType ?? 'Todos',
+                    decoration: const InputDecoration(
+                      labelText: 'Tipo',
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    ),
+                    items: _typeOptions.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                    onChanged: (v) => setState(() => _filterType = (v == 'Todos') ? null : v),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _filterSeverity ?? 'Todas',
+                    decoration: const InputDecoration(
+                      labelText: 'Severidade',
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    ),
+                    items: _severityOptions.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                    onChanged: (v) => setState(() => _filterSeverity = (v == 'Todas') ? null : v),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                DropdownButtonFormField<double>(
+                  value: _radiusMeters,
+                  decoration: const InputDecoration(
+                    labelText: 'Raio',
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+                  items: _radiusOptions.map((r) => DropdownMenuItem(
+                    value: r,
+                    child: Text(r == 1000 ? '1 km' : '${(r / 1000).toStringAsFixed(r >= 1000 ? 0 : 1)} km'),
+                  )).toList(),
+                  onChanged: (v) {
+                    if (v != null && v != _radiusMeters) {
+                      setState(() => _radiusMeters = v);
+                      if (_center != null) _refetchWithRadius(v);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
           SizedBox(
             height: 220,
             child: FlutterMap(

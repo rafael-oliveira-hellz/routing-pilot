@@ -47,8 +47,27 @@ O app usa **flutter_map** com tiles do **OpenStreetMap**: gratuito e **sem neces
 |-----------|-------------------------------------|---------------------------|
 | `ENV`     | Ambiente: local, dev, staging, prod | `local`                   |
 | `BASE_URL`| URL do backend                      | `http://10.0.2.2:8080` (Android) ou `http://localhost:8080` (iOS/Chrome) |
+| `isMockEnabled` | Quando `true`, usa mocks (login, etc.) em vez da API real | `false` |
+| `ENABLE_CERTIFICATE_PINNING` | Habilita pinning do certificado em prod | `false` |
+| `CERT_PIN_SHA256` | Hash SHA-256 (hex) do certificado do servidor; usado só se pinning ativo | (vazio) |
 
 Copie `.env.example` para `.env` e ajuste se necessário.
+
+### Auth e fluxos (referência)
+
+Fluxos de autenticação implementados (ver `docs/TODO-SPRINTS.md` para detalhes):
+
+| Fluxo | Endpoint / ação | O que o app faz |
+|-------|-----------------|------------------|
+| **Login** | POST /api/v1/auth/login (email, password, rememberMe) | Tela de login; guarda tokens em secure storage; redireciona para home |
+| **Logout** | POST /api/v1/auth/logout (Bearer) | Botão "Sair"; limpa storage; vai para login |
+| **Refresh** | POST /api/v1/auth/refresh (body: refreshToken) | Interceptor em 401; reenvia request após renovar token |
+| **Revogar outras sessões** | POST /api/v1/auth/revoke-all-other-sessions (Bearer) | Tela Segurança; atualiza refreshToken se backend retornar; mensagem de sucesso |
+| **Esqueci senha** | POST /api/v1/auth/forgot-password; POST /api/v1/auth/reset-password | Telas "Esqueci a senha" e "Redefinir senha" (token na URL) |
+| **Alterar senha** | POST /api/v1/auth/change-password (Bearer; currentPassword, newPassword) | Tela dentro de perfil/configurações |
+| **Cadastro** | POST /api/v1/users | Tela de registro; após sucesso redireciona para login |
+
+Todas as requisições HTTP saem com header **X-Trace-Id** (UUID) para rastreio no backend. Em telas de erro o app exibe "Código: {traceId}" para suporte.
 
 ### Rodar localmente (backend na sua máquina)
 

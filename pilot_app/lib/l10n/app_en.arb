@@ -1,0 +1,45 @@
+{
+  "@@locale": "en",
+  "appTitle": "Pilot",
+  "loginTitle": "Log in",
+  "registerTitle": "Create account",
+  "forgotPassword": "Forgot password",
+  "resetPassword": "Reset password",
+  "changePassword": "Change password",
+  "logout": "Log out",
+  "newRoute": "New route",
+  "incidentsNearby": "Nearby incidents",
+  "reportIncident": "Report incident",
+  "adminUsers": "Administration — Users",
+  "security": "Security and sessions",
+  "themeToggle": "Theme (light/dark/system)",
+  "back": "Back",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "remove": "Remove",
+  "removeUser": "Remove user",
+  "noPermission": "No permission",
+  "errorPageTitle": "Error",
+  "errorGeneric": "Something went wrong.",
+  "supportCode": "Code: {traceId}",
+  "@supportCode": {
+    "placeholders": {
+      "traceId": {
+        "type": "String"
+      }
+    }
+  },
+  "calculateRoute": "Calculate route",
+  "calculating": "Calculating...",
+  "recalculateRoute": "Recalculate route",
+  "viewOnMap": "View on map",
+  "startRoute": "Start route (live ETA)",
+  "fillLastRoute": "Fill with last route",
+  "origin": "Origin",
+  "destination": "Destination",
+  "stops": "Stops (max. 1000)",
+  "add": "Add",
+  "light": "Light",
+  "dark": "Dark",
+  "system": "System"
+}

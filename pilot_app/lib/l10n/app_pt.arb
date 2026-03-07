@@ -1,0 +1,45 @@
+{
+  "@@locale": "pt",
+  "appTitle": "Pilot",
+  "loginTitle": "Entrar",
+  "registerTitle": "Criar conta",
+  "forgotPassword": "Esqueci a senha",
+  "resetPassword": "Redefinir senha",
+  "changePassword": "Alterar senha",
+  "logout": "Sair",
+  "newRoute": "Nova rota",
+  "incidentsNearby": "Incidentes próximos",
+  "reportIncident": "Reportar incidente",
+  "adminUsers": "Administração — Usuários",
+  "security": "Segurança e sessões",
+  "themeToggle": "Tema (claro/escuro/sistema)",
+  "back": "Voltar",
+  "cancel": "Cancelar",
+  "confirm": "Confirmar",
+  "remove": "Remover",
+  "removeUser": "Remover usuário",
+  "noPermission": "Sem permissão",
+  "errorPageTitle": "Erro",
+  "errorGeneric": "Algo deu errado.",
+  "supportCode": "Código: {traceId}",
+  "@supportCode": {
+    "placeholders": {
+      "traceId": {
+        "type": "String"
+      }
+    }
+  },
+  "calculateRoute": "Calcular rota",
+  "calculating": "Calculando...",
+  "recalculateRoute": "Recalcular rota",
+  "viewOnMap": "Ver no mapa",
+  "startRoute": "Iniciar rota (ETA ao vivo)",
+  "fillLastRoute": "Preencher com última rota",
+  "origin": "Origem",
+  "destination": "Destino",
+  "stops": "Paradas (máx. 1000)",
+  "add": "Adicionar",
+  "light": "Claro",
+  "dark": "Escuro",
+  "system": "Sistema"
+}

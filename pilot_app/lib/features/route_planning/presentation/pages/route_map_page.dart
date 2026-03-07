@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:pilot_app/core/utils/polyline_simplify.dart';
 import 'package:pilot_app/core/config/app_config.dart';
 import 'package:pilot_app/core/domain/dto/incident_dto.dart';
 import 'package:pilot_app/features/incidents/domain/incident_repository.dart';
@@ -114,7 +115,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
     if (segHeavy == null || segHeavy.isEmpty) {
       return [
         Polyline(
-          points: args.polyline,
+          points: simplifyPolylineForDisplay(args.polyline),
           color: Colors.blue,
           strokeWidth: 5,
         ),
@@ -140,7 +141,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
     return polylines.isEmpty
         ? [
             Polyline(
-              points: args.polyline,
+              points: simplifyPolylineForDisplay(args.polyline),
               color: Colors.blue,
               strokeWidth: 5,
             ),

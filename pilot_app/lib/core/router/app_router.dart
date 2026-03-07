@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pilot_app/core/di/injection.dart';
 import 'package:pilot_app/core/router/pages/home_placeholder_page.dart';
 import 'package:pilot_app/core/router/pages/splash_page.dart';
+import 'package:pilot_app/features/auth/domain/auth_repository.dart';
 import 'package:pilot_app/features/auth/presentation/pages/change_password_page.dart';
 import 'package:pilot_app/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:pilot_app/features/auth/presentation/pages/login_page.dart';
@@ -38,6 +40,14 @@ class AppRouter {
 
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
+    redirect: (BuildContext context, GoRouterState state) async {
+      final location = state.matchedLocation;
+      if (location == '/admin/users') {
+        final user = await serviceLocator<AuthRepository>().getCurrentUser();
+        if (user == null || !user.isAdmin) return '/';
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/splash',
