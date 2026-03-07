@@ -2,12 +2,32 @@
 
 App Flutter do **Pilot**: roteamento, ETA em tempo real, ingestão GPS e incidentes crowdsourced, alinhado ao backend event-driven (NATS, Redis, PostGIS).
 
-## Estrutura
+## Estrutura de pastas
 
-- **`lib/core/`** — Config, tema, erros, utils (traceId), segurança, rede (a implementar por sprint)
-- **`lib/features/`** — Módulos por feature: auth, route_planning, tracking, incidents (ver `features/README.md`)
-- **`lib/app.dart`** — Root widget e (futuro) configuração de rotas
-- **`docs/TODO-SPRINTS.md`** — **Checklist completo por sprint** com todas as features e boas práticas
+```
+lib/
+├── app.dart                 # Root widget, tema, rotas
+├── main.dart                # Entry point
+├── core/
+│   ├── config/              # AppConfig, .env (BASE_URL, ENV)
+│   ├── di/                  # GetIt (serviceLocator)
+│   ├── domain/              # value_objects, enums, dto, domain.dart
+│   ├── error/               # PilotException, AuthException, etc.
+│   ├── l10n/                # Strings pt-BR / en (APP-1008)
+│   ├── network/             # ApiClient (Dio), ErrorResponse
+│   ├── router/              # go_router, páginas placeholder
+│   ├── security/            # SecureTokenStorage, JwtParser, RememberMePrefs
+│   ├── theme/               # AppTheme (Material 3 claro/escuro)
+│   └── util/                # trace_id, validators
+└── features/
+    ├── admin/               # Lista usuários (admin-only)
+    ├── auth/                # login, register, forgot/reset/change password, security
+    ├── incidents/           # (Sprint 6+)
+    ├── route_planning/      # (Sprint 2+)
+    └── tracking/            # (Sprint 4+)
+```
+
+- **`docs/CARDS/`** — Cards por sprint (APP-1001…); **`docs/TODO-SPRINTS.md`** — checklist completo.
 
 ## Como rodar
 
@@ -17,15 +37,22 @@ flutter pub get
 flutter run
 ```
 
+### Variáveis de ambiente
+
+| Variável   | Descrição                          | Exemplo (local)           |
+|-----------|-------------------------------------|---------------------------|
+| `ENV`     | Ambiente: local, dev, staging, prod | `local`                   |
+| `BASE_URL`| URL do backend                      | `http://10.0.2.2:8080` (Android) ou `http://localhost:8080` (iOS/Chrome) |
+
+Copie `.env.example` para `.env` e ajuste se necessário.
+
 ### Rodar localmente (backend na sua máquina)
 
-Ambientes: **local** | dev | staging | prod. Por padrão o app usa `ENV=local` e `BASE_URL=http://10.0.2.2:8080` (emulador Android / Android Studio).
+1. **Crie o `.env`:** `cp .env.example .env`
+2. Suba o backend (pilot) e execute: `flutter run` (emulador Android Studio ou dispositivo).
+3. **iOS / Chrome:** no `.env` use `BASE_URL=http://localhost:8080`.
 
-1. **Crie o `.env`** (se ainda não existir): `cp .env.example .env`
-2. Suba o backend (pilot) na sua máquina e depois: `flutter run` (no Android Studio ou `flutter run` no emulador).
-3. Se rodar em **iOS** ou **Chrome**, altere no `.env`: `BASE_URL=http://localhost:8080`
-
-Se o `.env` não existir, o app inicia em **local** com `BASE_URL=http://10.0.2.2:8080` (pronto para Android Studio).
+Se o `.env` não existir, o app usa `ENV=local` e `BASE_URL=http://10.0.2.2:8080` (emulador Android).
 
 ## Documento principal: TODO por sprint
 

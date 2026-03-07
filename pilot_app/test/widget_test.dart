@@ -1,10 +1,19 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pilot_app/app.dart';
+import 'package:pilot_app/core/config/app_config.dart';
+import 'package:pilot_app/core/di/injection.dart';
 
 void main() {
-  testWidgets('PilotApp loads and shows home placeholder', (WidgetTester tester) async {
+  setUpAll(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await AppConfig.ensureInitialized();
+    await configureDependencies();
+  });
+
+  testWidgets('PilotApp builds and shows initial screen', (WidgetTester tester) async {
     await tester.pumpWidget(const PilotApp());
-    expect(find.text('Pilot App'), findsOneWidget);
-    expect(find.text('Roteamento · ETA · Incidentes'), findsOneWidget);
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 }

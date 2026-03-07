@@ -1,0 +1,29 @@
+# CI: análise estática e testes. APP-1008.
+name: Flutter
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: cd pilot_app && flutter pub get
+
+      - name: Analyze
+        run: cd pilot_app && flutter analyze
+
+      - name: Test
+        run: cd pilot_app && flutter test
