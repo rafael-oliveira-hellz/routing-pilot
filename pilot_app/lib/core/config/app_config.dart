@@ -1,7 +1,9 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// Ambiente da aplicação (dev, staging, prod).
+/// Ambiente da aplicação (local, dev, staging, prod).
 enum AppEnv {
+  /// Backend rodando na máquina (localhost / emulador). Use BASE_URL no .env.
+  local,
   dev,
   staging,
   prod,
@@ -11,6 +13,9 @@ enum AppEnv {
 /// Carrega .env via flutter_dotenv; fallback para --dart-define se necessário.
 class AppConfig {
   static bool _initialized = false;
+
+  /// Padrão para backend no host: emulador Android usa 10.0.2.2; iOS/Chrome usam localhost (ajuste no .env).
+  static const String _defaultLocalBaseUrl = 'http://10.0.2.2:8080';
 
   static String get baseUrl => _baseUrl;
   static String _baseUrl = 'https://api.pilot.example.com';
@@ -61,15 +66,19 @@ class AppConfig {
     if (_initialized) return;
     try {
       await dotenv.load(fileName: '.env');
-      _baseUrl = dotenv.env['BASE_URL'] ?? _baseUrl;
-      final envStr = dotenv.env['ENV']?.toLowerCase() ?? 'dev';
+      final envStr = dotenv.env['ENV']?.toLowerCase() ?? 'local';
       _env = switch (envStr) {
+        'local' => AppEnv.local,
         'staging' => AppEnv.staging,
         'prod' || 'production' => AppEnv.prod,
         _ => AppEnv.dev,
       };
+      _baseUrl = dotenv.env['BASE_URL'] ??
+          (_env == AppEnv.local ? _defaultLocalBaseUrl : _baseUrl);
     } catch (_) {
-      // .env ausente ou inválido: manter defaults (baseUrl, dev)
+      // .env ausente: usar local com default para rodar localmente
+      _env = AppEnv.local;
+      _baseUrl = _defaultLocalBaseUrl;
     }
     _initialized = true;
   }
