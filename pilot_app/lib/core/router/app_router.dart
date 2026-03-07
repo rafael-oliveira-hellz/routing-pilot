@@ -9,8 +9,10 @@ import 'package:pilot_app/features/auth/presentation/pages/register_page.dart';
 import 'package:pilot_app/features/auth/presentation/pages/reset_password_page.dart';
 import 'package:pilot_app/features/auth/presentation/pages/security_page.dart';
 import 'package:pilot_app/features/admin/presentation/pages/admin_users_page.dart';
+import 'package:pilot_app/features/route_planning/presentation/pages/new_route_page.dart';
+import 'package:pilot_app/features/route_planning/presentation/pages/route_result_page.dart';
 
-/// Rotas nomeadas e deep links do Pilot App. APP-1007: admin/users.
+/// Rotas nomeadas e deep links do Pilot App. APP-2002: routes/new, routes/result.
 class AppRouter {
   static const String routeSplash = 'splash';
   static const String routeHome = 'home';
@@ -21,6 +23,8 @@ class AppRouter {
   static const String routeChangePassword = 'change-password';
   static const String routeSecurity = 'security';
   static const String routeAdminUsers = 'admin-users';
+  static const String routeNewRoute = 'new-route';
+  static const String routeRouteResult = 'route-result';
 
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
@@ -72,6 +76,20 @@ class AppRouter {
         path: '/admin/users',
         name: routeAdminUsers,
         builder: (_, __) => const AdminUsersPage(),
+      ),
+      GoRoute(
+        path: '/routes/new',
+        name: routeNewRoute,
+        builder: (_, __) => const NewRoutePage(),
+      ),
+      GoRoute(
+        path: '/routes/result',
+        name: routeRouteResult,
+        builder: (context, state) {
+          final id = state.uri.queryParameters['id'] ?? '';
+          final status = state.uri.queryParameters['status'] ?? '';
+          return RouteResultPage(requestId: id, status: status);
+        },
       ),
     ],
     errorBuilder: (_, state) => Scaffold(

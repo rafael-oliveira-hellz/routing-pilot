@@ -30,6 +30,11 @@ class _HomePlaceholderPageState extends State<HomePlaceholderPage> {
         title: const Text('Pilot'),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.add_road),
+            tooltip: 'Nova rota',
+            onPressed: () => GoRouter.of(context).go('/routes/new'),
+          ),
           if (_isAdmin == true)
             IconButton(
               icon: const Icon(Icons.people),
