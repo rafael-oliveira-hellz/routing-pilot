@@ -117,6 +117,7 @@ Algoritmos aqui são **complexos** (conjunto otimizado: TSP, MST, matching, 2-op
 - [ ] [M] `RecalculateRouteUseCase`: chamar o engine (você entrega), persistir resultado, `@CircuitBreaker` + Resilience4j, métrica `optimization.duration`
 - [ ] [M] `NatsRecalcListener` consumer `route.recalc.requested.>` → use case
 - [ ] [M] Testes que **usam** o engine (ex.: integração com 100 pontos); benchmark 100/300/500/1000 pts (opcional); pipeline S3 / ZGC (opcional)
+- [ ] [M] **Pendência app (mapa – trânsito por segmento):** No GET do resultado da rota (`/api/v1/route-requests/{id}/result`), em cada item de `segments[]`, incluir campo opcional **`trafficLevel`**: `"HEAVY"` para trecho com trânsito intenso; omitir ou `"NORMAL"` para fluido. App pinta trechos HEAVY em vermelho no mapa. **Por enquanto**, definir `trafficLevel` com base nos incidentes reportados pelos usuários (ex.: segmentos afetados por incidentes do tipo HEAVY_TRAFFIC ou com severidade alta); futuramente pode vir de provedor de trânsito.
 
 **Lição de casa (mentorado) — entender o que está feito:**
 
@@ -139,6 +140,7 @@ Algoritmos aqui são **complexos** (conjunto otimizado: TSP, MST, matching, 2-op
 - [ ] [M] Dedup: `RedisLocationDedup` (vehicleId + occurredAt, TTL 2 min); rate limit: `RateLimitConfig.isLocationRateLimited()` via Redis
 - [ ] [M] `NatsLocationListener` (consumer `route.location.>`): captura payload raw, chama use case, propaga traceId (header X-Trace-Id)
 - [ ] [M] `LocationIngestionController`: POST /api/v1/locations (batch), validar, publicar LocationUpdatedEvent por posição (ou enfileirar para NATS)
+- [ ] [M] **Pendência app:** Em resposta 429 (rate limit) no POST /api/v1/locations, enviar header **Retry-After** (segundos) para o app respeitar o backoff.
 - [ ] [M] WebSocket: `EtaWebSocketHandler` (push ETA ao cliente)
 - [ ] [M] Batch insert para `live_position` (opcional); JWT no controller (opcional); testes de integração NATS + Redis (Testcontainers)
 
@@ -172,6 +174,7 @@ Algoritmos aqui são **complexos** (conjunto otimizado: TSP, MST, matching, 2-op
 - [ ] [M] API REST: POST /api/v1/incidents (report), POST /api/v1/incidents/{id}/vote, GET /api/v1/incidents?lat=&lon=&radius=
 - [ ] [M] WebSocket: `IncidentAlertHandler`, endpoint `/ws/incidents` (push INCIDENT_ALERT)
 - [ ] [M] Integração incident + engine (penalidade nos segmentos); testes de integração (report → quorum → ETA)
+- [ ] [M] **Pendência app (mapa – semáforos):** Expor POIs de semáforo para o app exibir no mapa. Opção A: endpoint `GET /api/v1/pois?lat=&lon=&radius=&type=TRAFFIC_LIGHT` retornando `[{ id, lat, lon, type }]`. Opção B: no resultado da rota (GET result), array opcional `trafficLightsAlongRoute: [{ lat, lon }]`. App adiciona camada de marcadores quando o dado existir.
 
 **Criterio de aceite**: Reportar incidente → quorum → ETA ajustado para veículos na região; incidente visível no trecho.
 
@@ -198,6 +201,8 @@ Algoritmos aqui são **complexos** (conjunto otimizado: TSP, MST, matching, 2-op
 - [ ] [M] Dashboards Grafana (ETA latency, recalc rate, incidents, consumer lag, DLQ); dashboard auditoria (traceId, sourceEventId, vehicleId)
 - [ ] [M] Alertas (recalc spike, degraded, consumer lag, circuit breaker, DLQ growth) e runbooks doc 13 vinculados
 - [ ] [M] Chaos testing (opcional, pleno); review SLOs; documentação final
+- [ ] [M] **Pendência app (erro/traceId):** Respostas de erro no padrão consumido pelo app: body com `message`, `errorCode`, `traceId` (e opcional `path`, `timestamp`). Aceitar e propagar header **X-Trace-Id** em logs, eventos e DLQ para o app exibir "Código: {traceId}" em telas de erro.
+- [ ] [M] **Pendência app (rate limit):** Em respostas 429 (rate limit), enviar header **Retry-After** (segundos) quando aplicável (ex.: locations, incidentes).
 
 **Criterio de aceite**: Dado um erro, rastrear pelo traceId: payload de entrada, decisão, onde falhou; dado original na DLQ.
 

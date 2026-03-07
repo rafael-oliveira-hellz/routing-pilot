@@ -41,10 +41,17 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   shared_preferences: ^2.3.3
   # Sprint 2+: (models de rota)
-  # Sprint 3+: google_maps_flutter ou mapbox
+  # Sprint 3: mapa — OpenStreetMap via flutter_map (gratuito, sem API key).
+  flutter_map: ^8.0.0
+  latlong2: ^0.9.1
   # Sprint 4+: geolocator, web_socket_channel, connectivity_plus
+  geolocator: ^13.0.2
+  web_socket_channel: ^3.0.1
+  connectivity_plus: ^6.1.1
   # Sprint 6+: (incidents)
-  # Sprint 7+: sqflite ou hive, connectivity_plus
+  # Sprint 7+: buffer offline
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:

@@ -37,6 +37,10 @@ flutter pub get
 flutter run
 ```
 
+### Mapa (OpenStreetMap)
+
+O app usa **flutter_map** com tiles do **OpenStreetMap**: gratuito e **sem necessidade de chave de API**. Não é necessário configurar Google Maps.
+
 ### Variáveis de ambiente
 
 | Variável   | Descrição                          | Exemplo (local)           |

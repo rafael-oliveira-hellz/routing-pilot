@@ -16,4 +16,14 @@ class RouteRepositoryImpl implements RouteRepository {
     if (error != null) throw ValidationException(error);
     return _remote.submitRouteRequest(request);
   }
+
+  @override
+  Future<RouteResultDto?> getRouteResult(String routeRequestId) async {
+    return _remote.getRouteResult(routeRequestId);
+  }
+
+  @override
+  Future<void> requestRecalculation(String routeRequestId, String reason) async {
+    await _remote.requestRecalculation(routeRequestId, reason);
+  }
 }

@@ -20,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _rememberMe = false;
   bool _loading = false;
   String? _errorMessage;
+  String? _errorTraceId;
 
   @override
   void dispose() {
@@ -30,6 +31,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _submit() async {
     _errorMessage = null;
+    _errorTraceId = null;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
@@ -45,16 +47,19 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _loading = false;
         _errorMessage = e.message;
+        _errorTraceId = e.traceId;
       });
     } on ValidationException catch (e) {
       setState(() {
         _loading = false;
         _errorMessage = e.message;
+        _errorTraceId = e.traceId;
       });
     } catch (e) {
       setState(() {
         _loading = false;
         _errorMessage = 'Falha ao entrar. Tente novamente.';
+        _errorTraceId = e is PilotException ? e.traceId : null;
       });
     }
   }
@@ -137,17 +142,33 @@ class _LoginPageState extends State<LoginPage> {
                     _errorMessage!,
                     style: TextStyle(color: Theme.of(context).colorScheme.error),
                   ),
+                  if (_errorTraceId != null) ...[
+                    const SizedBox(height: 4),
+                    Semantics(
+                      label: 'Código de rastreio para suporte',
+                      child: Text(
+                        'Código: $_errorTraceId',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontFamily: 'monospace',
+                            ),
+                      ),
+                    ),
+                  ],
                 ],
                 const SizedBox(height: 24),
-                FilledButton(
-                  onPressed: _loading ? null : _submit,
-                  child: _loading
+                Semantics(
+                  button: true,
+                  label: 'Entrar na conta',
+                  child: FilledButton(
+                    onPressed: _loading ? null : _submit,
+                    child: _loading
                       ? const SizedBox(
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Text('Entrar'),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Align(

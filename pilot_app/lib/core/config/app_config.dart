@@ -20,6 +20,14 @@ class AppConfig {
   static String get baseUrl => _baseUrl;
   static String _baseUrl = 'https://api.pilot.example.com';
 
+  /// URL base para WebSocket (ws/wss conforme baseUrl). Sprint 4.
+  static String get wsBaseUrl {
+    final b = _baseUrl;
+    if (b.startsWith('https://')) return b.replaceFirst('https://', 'wss://');
+    if (b.startsWith('http://')) return b.replaceFirst('http://', 'ws://');
+    return 'wss://$_baseUrl';
+  }
+
   static AppEnv get env => _env;
   static AppEnv _env = AppEnv.dev;
 
@@ -62,6 +70,21 @@ class AppConfig {
   /// Ao atingir esta fração do buffer, remover mais antigas (FIFO).
   static double get offlineBufferTrimRatio => 0.9;
 
+  /// Centro padrão do mapa (lat/lon). Usado quando não há polyline ou posição do usuário.
+  static double get mapCenterLat => 0.0;
+  static double get mapCenterLon => 0.0;
+
+  /// Opcional: chave Google Maps se no futuro quiser usar tiles Google. Hoje o app usa OpenStreetMap (gratuito, sem chave).
+  static String? get googleMapsApiKey => _googleMapsApiKey;
+  static String? _googleMapsApiKey;
+
+  static bool get hasGoogleMapsApiKey =>
+      _googleMapsApiKey != null && _googleMapsApiKey!.trim().isNotEmpty;
+
+  /// Quando true, usar mocks em vez da API real (login, rotas, etc.). APP-8003.
+  static bool get isMockEnabled => _isMockEnabled;
+  static bool _isMockEnabled = false;
+
   static Future<void> ensureInitialized() async {
     if (_initialized) return;
     try {
@@ -75,6 +98,8 @@ class AppConfig {
       };
       _baseUrl = dotenv.env['BASE_URL'] ??
           (_env == AppEnv.local ? _defaultLocalBaseUrl : _baseUrl);
+      _googleMapsApiKey = dotenv.env['GOOGLE_MAPS_API_KEY']?.trim();
+      _isMockEnabled = dotenv.env['isMockEnabled']?.toLowerCase() == 'true';
     } catch (_) {
       // .env ausente: usar local com default para rodar localmente
       _env = AppEnv.local;

@@ -10,9 +10,14 @@ import 'package:pilot_app/features/auth/presentation/pages/reset_password_page.d
 import 'package:pilot_app/features/auth/presentation/pages/security_page.dart';
 import 'package:pilot_app/features/admin/presentation/pages/admin_users_page.dart';
 import 'package:pilot_app/features/route_planning/presentation/pages/new_route_page.dart';
+import 'package:pilot_app/features/route_planning/presentation/pages/route_map_page.dart';
+import 'package:pilot_app/features/tracking/presentation/pages/en_rota_page.dart';
+import 'package:pilot_app/features/incidents/presentation/pages/report_incident_page.dart';
+import 'package:pilot_app/features/incidents/presentation/pages/incidents_list_page.dart';
+import 'package:pilot_app/core/router/pages/error_page.dart';
 import 'package:pilot_app/features/route_planning/presentation/pages/route_result_page.dart';
 
-/// Rotas nomeadas e deep links do Pilot App. APP-2002: routes/new, routes/result.
+/// Rotas nomeadas e deep links do Pilot App. APP-2002: routes/new, routes/result. APP-3001: routes/map.
 class AppRouter {
   static const String routeSplash = 'splash';
   static const String routeHome = 'home';
@@ -25,6 +30,11 @@ class AppRouter {
   static const String routeAdminUsers = 'admin-users';
   static const String routeNewRoute = 'new-route';
   static const String routeRouteResult = 'route-result';
+  static const String routeMap = 'route-map';
+  static const String routeEnRota = 'en-rota';
+  static const String routeReportIncident = 'report-incident';
+  static const String routeIncidentsList = 'incidents-list';
+  static const String routeError = 'error';
 
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
@@ -89,6 +99,46 @@ class AppRouter {
           final id = state.uri.queryParameters['id'] ?? '';
           final status = state.uri.queryParameters['status'] ?? '';
           return RouteResultPage(requestId: id, status: status);
+        },
+      ),
+      GoRoute(
+        path: '/routes/map',
+        name: routeMap,
+        builder: (context, state) {
+          final requestId = state.uri.queryParameters['requestId'];
+          final args = state.extra as RouteMapArgs?;
+          return RouteMapPage(requestId: requestId, args: args);
+        },
+      ),
+      GoRoute(
+        path: '/routes/en-rota',
+        name: routeEnRota,
+        builder: (context, state) {
+          final requestId = state.uri.queryParameters['requestId'] ?? '';
+          final args = state.extra as EnRotaArgs?;
+          return EnRotaPage(
+            routeRequestId: requestId,
+            initialPolyline: args?.polyline,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/incidents/report',
+        name: routeReportIncident,
+        builder: (_, __) => const ReportIncidentPage(),
+      ),
+      GoRoute(
+        path: '/incidents',
+        name: routeIncidentsList,
+        builder: (_, __) => const IncidentsListPage(),
+      ),
+      GoRoute(
+        path: '/error',
+        name: routeError,
+        builder: (context, state) {
+          final message = state.uri.queryParameters['message'] ?? 'Algo deu errado.';
+          final traceId = state.uri.queryParameters['traceId'];
+          return ErrorPage(message: message, traceId: traceId);
         },
       ),
     ],

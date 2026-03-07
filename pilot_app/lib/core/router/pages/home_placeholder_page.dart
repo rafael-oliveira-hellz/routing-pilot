@@ -35,6 +35,16 @@ class _HomePlaceholderPageState extends State<HomePlaceholderPage> {
             tooltip: 'Nova rota',
             onPressed: () => GoRouter.of(context).go('/routes/new'),
           ),
+          IconButton(
+            icon: const Icon(Icons.warning_amber),
+            tooltip: 'Incidentes próximos',
+            onPressed: () => GoRouter.of(context).go('/incidents'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.report),
+            tooltip: 'Reportar incidente',
+            onPressed: () => GoRouter.of(context).go('/incidents/report'),
+          ),
           if (_isAdmin == true)
             IconButton(
               icon: const Icon(Icons.people),
