@@ -1,0 +1,83 @@
+name: osm-postgis-diff
+
+on:
+  schedule:
+    - cron: '0 5 * * 0'
+  workflow_dispatch:
+
+env:
+  S3_BUCKET: routing-data
+  AWS_REGION: sa-east-1
+  CODEBUILD_PROJECT: osm-postgis-import
+
+jobs:
+  diff-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout OSM infra assets
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            rivo/infra/osm2pgsql
+            rivo/infra/codebuild
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Download latest diff from Geofabrik
+        run: |
+          pip install osmium
+          python3 -c "
+          import urllib.request
+          state_url = 'https://download.geofabrik.de/south-america/brazil-updates/state.txt'
+          resp = urllib.request.urlopen(state_url).read().decode()
+          seq = int([l for l in resp.split('\\n') if l.startswith('sequenceNumber')][0].split('=')[1])
+          path = f'{seq // 1000000:03d}/{(seq // 1000) % 1000:03d}/{seq % 1000:03d}'
+          url = f'https://download.geofabrik.de/south-america/brazil-updates/{path}.osc.gz'
+          print(f'Downloading: {url}')
+          urllib.request.urlretrieve(url, '/tmp/brazil-diff.osc.gz')
+          with open('/tmp/diff-name.txt', 'w', encoding='utf-8') as f: f.write(f'{path}.osc.gz')
+          "
+
+      - name: Upload diff and Lua transform to S3
+        run: |
+          aws s3 cp /tmp/brazil-diff.osc.gz s3://$S3_BUCKET/osm/brazil-diff.osc.gz
+          aws s3 cp "$GITHUB_WORKSPACE/rivo/infra/osm2pgsql/osm2pgsql-flex.lua" s3://$S3_BUCKET/osm/osm2pgsql-flex.lua
+
+      - name: Trigger CodeBuild diff import
+        id: codebuild
+        run: |
+          DIFF_NAME=$(cat /tmp/diff-name.txt)
+          BUILD_ID=$(aws codebuild start-build \
+            --project-name "$CODEBUILD_PROJECT" \
+            --buildspec-override "$(cat "$GITHUB_WORKSPACE/rivo/infra/codebuild/osm-import-buildspec.yml")" \
+            --environment-variables-override \
+              "name=IMPORT_TYPE,value=diff,type=PLAINTEXT" \
+              "name=SOURCE_FILE,value=$DIFF_NAME,type=PLAINTEXT" \
+            --query 'build.id' --output text)
+          echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for CodeBuild
+        run: |
+          BUILD_ID="${{ steps.codebuild.outputs.build_id }}"
+          while true; do
+            STATUS=$(aws codebuild batch-get-builds --ids "$BUILD_ID" --query 'builds[0].buildStatus' --output text)
+            echo "$(date): Status = $STATUS"
+            if [ "$STATUS" = "SUCCEEDED" ]; then
+              break
+            fi
+            if [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "FAULT" ] || [ "$STATUS" = "STOPPED" ] || [ "$STATUS" = "TIMED_OUT" ]; then
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Cleanup S3
+        if: always()
+        run: aws s3 rm s3://$S3_BUCKET/osm/brazil-diff.osc.gz

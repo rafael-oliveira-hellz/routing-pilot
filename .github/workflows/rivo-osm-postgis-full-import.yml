@@ -1,0 +1,76 @@
+name: rivo-osm-postgis-full-import
+
+on:
+  schedule:
+    - cron: '0 5 1 * *'
+  workflow_dispatch:
+
+env:
+  S3_BUCKET: routing-data
+  GEOFABRIK_URL: https://download.geofabrik.de/south-america/brazil-latest.osm.pbf
+  AWS_REGION: sa-east-1
+  CODEBUILD_PROJECT: osm-postgis-import
+
+jobs:
+  upload-and-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+
+    steps:
+      - name: Checkout OSM infra assets
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            rivo/infra/osm2pgsql
+            rivo/infra/codebuild
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Download brazil pbf
+        run: |
+          curl -L -o /tmp/brazil.osm.pbf "$GEOFABRIK_URL"
+          ls -lh /tmp/brazil.osm.pbf
+
+      - name: Upload pbf and Lua transform to S3
+        run: |
+          aws s3 cp /tmp/brazil.osm.pbf s3://$S3_BUCKET/osm/brazil-latest.osm.pbf
+          aws s3 cp "$GITHUB_WORKSPACE/rivo/infra/osm2pgsql/osm2pgsql-flex.lua" s3://$S3_BUCKET/osm/osm2pgsql-flex.lua
+
+      - name: Trigger CodeBuild full import
+        id: codebuild
+        run: |
+          BUILD_ID=$(aws codebuild start-build \
+            --project-name "$CODEBUILD_PROJECT" \
+            --buildspec-override "$(cat "$GITHUB_WORKSPACE/rivo/infra/codebuild/osm-import-buildspec.yml")" \
+            --environment-variables-override \
+              "name=IMPORT_TYPE,value=full,type=PLAINTEXT" \
+              "name=SOURCE_FILE,value=brazil-latest.osm.pbf,type=PLAINTEXT" \
+            --query 'build.id' --output text)
+          echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for CodeBuild
+        run: |
+          BUILD_ID="${{ steps.codebuild.outputs.build_id }}"
+          while true; do
+            STATUS=$(aws codebuild batch-get-builds --ids "$BUILD_ID" --query 'builds[0].buildStatus' --output text)
+            echo "$(date): Status = $STATUS"
+            if [ "$STATUS" = "SUCCEEDED" ]; then
+              break
+            fi
+            if [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "FAULT" ] || [ "$STATUS" = "STOPPED" ] || [ "$STATUS" = "TIMED_OUT" ]; then
+              aws codebuild batch-get-builds --ids "$BUILD_ID" --query 'builds[0].phases[?phaseStatus!=`SUCCEEDED`]' --output table
+              exit 1
+            fi
+            sleep 60
+          done
+
+      - name: Cleanup S3
+        if: always()
+        run: |
+          aws s3 rm s3://$S3_BUCKET/osm/brazil-latest.osm.pbf
+          rm -f /tmp/brazil.osm.pbf

@@ -1,0 +1,784 @@
+openapi: 3.1.0
+info:
+  title: Rivo API
+  version: 1.0.0
+  description: API versionada do backend de roteirizacao, tracking, auth, incidentes e observabilidade.
+servers:
+  - url: http://localhost:8080
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Users
+  - name: Route Requests
+  - name: Locations
+  - name: Incidents
+  - name: Pois
+paths:
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Autentica usuario e emite access/refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Sessao autenticada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '422':
+          $ref: '#/components/responses/Error422'
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Rotaciona refresh token e emite novo access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token renovado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Error401'
+  /api/v1/auth/remember-me:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Reabre sessao a partir do remember me token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RememberMeLoginRequest'
+      responses:
+        '200':
+          description: Sessao renovada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Error401'
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Revoga refresh token da sessao atual e bloqueia o jti do access token
+      responses:
+        '204':
+          description: Logout realizado
+        '401':
+          $ref: '#/components/responses/Error401'
+  /api/v1/auth/revoke-all-other-sessions:
+    post:
+      tags: [Auth]
+      summary: Revoga todas as outras sessoes do usuario atual
+      responses:
+        '200':
+          description: Sessao atual rotacionada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Error401'
+  /api/v1/auth/forgot-password:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Gera token de reset e responde sem revelar existencia do email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Pedido aceito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+  /api/v1/auth/reset-password:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Redefine a senha a partir do token de reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Senha redefinida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+        '401':
+          $ref: '#/components/responses/Error401'
+  /api/v1/auth/change-password:
+    post:
+      tags: [Auth]
+      summary: Altera a senha do usuario autenticado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '204':
+          description: Senha alterada
+        '401':
+          $ref: '#/components/responses/Error401'
+  /api/v1/users:
+    post:
+      tags: [Users]
+      security:
+        - {}
+        - bearerAuth: []
+      summary: Cadastro publico de usuario ou criacao administrativa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Usuario criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '409':
+          $ref: '#/components/responses/Error409'
+        '422':
+          $ref: '#/components/responses/Error422'
+    get:
+      tags: [Users]
+      summary: Lista usuarios
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '403':
+          $ref: '#/components/responses/Error403'
+  /api/v1/users/me:
+    get:
+      tags: [Users]
+      summary: Recupera o usuario autenticado
+      responses:
+        '200':
+          description: Usuario autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Error401'
+  /api/v1/users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    get:
+      tags: [Users]
+      summary: Recupera usuario por id
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+    put:
+      tags: [Users]
+      summary: Atualiza usuario por id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Usuario atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+    delete:
+      tags: [Users]
+      summary: Remove ou desativa usuario
+      responses:
+        '204':
+          description: Usuario removido
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+  /api/v1/route-requests:
+    post:
+      tags: [Route Requests]
+      summary: Solicita uma nova otimizacao de rota
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+      responses:
+        '201':
+          description: Solicitacao aceita
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteRequestCreatedResponse'
+  /api/v1/route-requests/{id}/result:
+    get:
+      tags: [Route Requests]
+      summary: Recupera o resultado mais recente da rota
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Resultado de rota
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteResultResponse'
+        '404':
+          $ref: '#/components/responses/Error404'
+  /api/v1/locations:
+    post:
+      tags: [Locations]
+      summary: Ingestao batch de localizacoes do veiculo
+      parameters:
+        - in: header
+          name: X-Trace-Id
+          schema:
+            type: string
+            format: uuid
+          required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchLocationRequest'
+      responses:
+        '202':
+          description: Batch aceito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngestionResponse'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '429':
+          description: Rate limit aplicado
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Segundos para backoff do app
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/incidents:
+    post:
+      tags: [Incidents]
+      summary: Reporta incidente crowdsourced
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentReportRequest'
+      responses:
+        '201':
+          description: Incidente registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentReportResponse'
+    get:
+      tags: [Incidents]
+      summary: Lista incidentes proximos
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: lon
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: radius
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 1000
+      responses:
+        '200':
+          description: Incidentes ativos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IncidentResponse'
+  /api/v1/incidents/{id}/vote:
+    post:
+      tags: [Incidents]
+      summary: Registra voto em incidente
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentVoteRequest'
+      responses:
+        '200':
+          description: Voto registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+        '404':
+          $ref: '#/components/responses/Error404'
+  /api/v1/pois:
+    get:
+      tags: [Pois]
+      summary: Lista POIs por raio e tipo
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: lon
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: radius
+          in: query
+          required: false
+          schema:
+            type: number
+            default: 1000
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            default: TRAFFIC_LIGHT
+      responses:
+        '200':
+          description: Lista de POIs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PoiResponse'
+components:
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Error401:
+      description: Nao autenticado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error403:
+      description: Acesso negado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error404:
+      description: Recurso nao encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error409:
+      description: Conflito de regra de negocio
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Error422:
+      description: Erro de validacao de dominio
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [timestamp, status, errorCode, message, path, traceId]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        errorCode:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        traceId:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorField'
+    ErrorField:
+      type: object
+      properties:
+        field:
+          type: string
+        rejectedValue: {}
+        message:
+          type: string
+    LoginRequest:
+      type: object
+      required: [email, password, rememberMe]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        rememberMe:
+          type: boolean
+    RefreshTokenRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+    RememberMeLoginRequest:
+      type: object
+      required: [rememberMeToken]
+      properties:
+        rememberMeToken:
+          type: string
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    ResetPasswordRequest:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 128
+    ChangePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 128
+    CreateUserRequest:
+      type: object
+      required: [email, password, name]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+        name:
+          type: string
+          maxLength: 255
+        vehicleId:
+          type: string
+          maxLength: 120
+        role:
+          $ref: '#/components/schemas/UserRole'
+    UpdateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          maxLength: 255
+        vehicleId:
+          type: string
+          maxLength: 120
+        role:
+          $ref: '#/components/schemas/UserRole'
+        active:
+          type: boolean
+    UserResponse:
+      type: object
+      required: [id, email, name, role, active, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        vehicleId:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+        rememberMeToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserResponse'
+    UserRole:
+      type: string
+      enum: [USER, ADMIN]
+    RouteRequest:
+      type: object
+      additionalProperties: true
+      description: Contrato refletindo a entidade persistida do request de rota no backend atual.
+    RouteRequestCreatedResponse:
+      type: object
+      required: [id, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [OPTIMIZATION_REQUESTED]
+    RouteResultResponse:
+      type: object
+      required: [totalDistanceMeters, totalDurationSeconds, segments]
+      properties:
+        totalDistanceMeters:
+          type: number
+        totalDurationSeconds:
+          type: number
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/RouteSegment'
+        trafficLightsAlongRoute:
+          type: array
+          items:
+            $ref: '#/components/schemas/LatLon'
+    RouteSegment:
+      type: object
+      required: [id, fromPoint, toPoint, distanceMeters, travelTimeSeconds]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fromPoint:
+          type: string
+          format: uuid
+        toPoint:
+          type: string
+          format: uuid
+        distanceMeters:
+          type: number
+        travelTimeSeconds:
+          type: number
+        trafficLevel:
+          type: string
+          enum: [NORMAL, HEAVY]
+    LatLon:
+      type: object
+      required: [lat, lon]
+      properties:
+        lat:
+          type: number
+        lon:
+          type: number
+    BatchLocationRequest:
+      type: object
+      required: [vehicleId, routeId, routeVersion, positions]
+      properties:
+        vehicleId:
+          type: string
+        routeId:
+          type: string
+        routeVersion:
+          type: integer
+        positions:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PositionPayload'
+    PositionPayload:
+      type: object
+      required: [lat, lon, speedMps, heading, accuracyMeters, occurredAt]
+      properties:
+        lat:
+          type: number
+        lon:
+          type: number
+        speedMps:
+          type: number
+        heading:
+          type: number
+        accuracyMeters:
+          type: number
+        occurredAt:
+          type: string
+          format: date-time
+    IngestionResponse:
+      type: object
+      required: [accepted, duplicates, rejected]
+      properties:
+        accepted:
+          type: integer
+        duplicates:
+          type: integer
+        rejected:
+          type: integer
+    IncidentReportRequest:
+      type: object
+      required: [lat, lon, incidentType, reportedBy]
+      properties:
+        lat:
+          type: number
+        lon:
+          type: number
+        incidentType:
+          type: string
+        severity:
+          type: string
+        description:
+          type: string
+        reportedBy:
+          type: string
+          format: uuid
+    IncidentReportResponse:
+      type: object
+      required: [incidentId, status]
+      properties:
+        incidentId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [REPORTED]
+    IncidentVoteRequest:
+      type: object
+      required: [voterId, voteType]
+      properties:
+        voterId:
+          type: string
+          format: uuid
+        voteType:
+          type: string
+    IncidentResponse:
+      type: object
+      additionalProperties: true
+      description: Resposta refletindo a entidade JPA atual de incidente.
+    PoiResponse:
+      type: object
+      required: [id, lat, lon, type]
+      properties:
+        id:
+          type: string
+        lat:
+          type: number
+        lon:
+          type: number
+        type:
+          type: string
+    StatusResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string

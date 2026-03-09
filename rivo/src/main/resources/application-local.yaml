@@ -1,0 +1,3 @@
+routing:
+  auth:
+    allow-ephemeral-keys: true

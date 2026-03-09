@@ -1,0 +1,11 @@
+graphhopper:
+  datareader.file: /tmp/gh-work/brazil.osm.pbf
+  graph.location: /tmp/gh-work/graph-cache
+  profiles:
+    - name: car
+      vehicle: car
+      weighting: fastest
+  prepare.ch:
+    profiles:
+      - profile: car
+  graph.encoded_values: road_class,road_environment,max_speed,surface

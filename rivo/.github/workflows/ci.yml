@@ -1,0 +1,66 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master, "codex/**"]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: routing_ci
+          POSTGRES_USER: routing
+          POSTGRES_PASSWORD: routing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U routing -d routing_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      nats:
+        image: nats:2.10-alpine
+        ports:
+          - 4222:4222
+        options: >-
+          --health-cmd "wget -q --spider -O /dev/null http://127.0.0.1:8222/healthz || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        command: ["-js", "-sd", "/data", "-m", "8222"]
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: routing_ci
+      DB_USER: routing
+      DB_PASSWORD: routing
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      NATS_SERVER: nats://localhost:4222
+      AUTH_ALLOW_EPHEMERAL_KEYS: "true"
+      CI_FLYWAY_URL: jdbc:postgresql://localhost:5432/routing_ci
+      CI_FLYWAY_USER: routing
+      CI_FLYWAY_PASSWORD: routing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Build and test
+        working-directory: rivo
+        run: mvn -B -Djava.version=25 test

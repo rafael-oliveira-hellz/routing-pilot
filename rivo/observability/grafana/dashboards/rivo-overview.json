@@ -1,0 +1,64 @@
+{
+  "annotations": {"list": []},
+  "editable": false,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP Requests by Status",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {"expr": "sum(rate(http_server_requests_seconds_count{application=\"rivo\"}[5m])) by (status)", "legendFormat": "{{status}}", "refId": "A"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Optimization Duration p95",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {"expr": "histogram_quantile(0.95, sum(rate(optimization_duration_seconds_bucket{application=\"rivo\"}[10m])) by (le))", "legendFormat": "p95", "refId": "A"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Location Updates by Decision",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [
+        {"expr": "sum(rate(routing_location_updates_total{application=\"rivo\"}[5m])) by (decision)", "legendFormat": "{{decision}}", "refId": "A"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "DLQ Publications",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [
+        {"expr": "sum(rate(routing_dlq_published_total{application=\"rivo\"}[5m])) by (sink,error_code)", "legendFormat": "{{sink}} {{error_code}}", "refId": "A"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Incident Reports",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "targets": [
+        {"expr": "sum(rate(routing_incident_reports_total{application=\"rivo\"}[5m])) by (type,activated)", "legendFormat": "{{type}} activated={{activated}}", "refId": "A"}
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Rate Limited Requests",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "targets": [
+        {"expr": "sum(rate(http_server_requests_seconds_count{application=\"rivo\",status=\"429\"}[5m]))", "legendFormat": "429/s", "refId": "A"}
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["rivo", "routing"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timezone": "browser",
+  "title": "Rivo Overview",
+  "uid": "rivo-overview",
+  "version": 1
+}

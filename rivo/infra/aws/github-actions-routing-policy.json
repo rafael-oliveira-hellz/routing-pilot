@@ -1,0 +1,29 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowRoutingBucketWrites",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::routing-data",
+        "arn:aws:s3:::routing-data/*"
+      ]
+    },
+    {
+      "Sid": "AllowCodeBuildOrchestration",
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:StartBuild",
+        "codebuild:BatchGetBuilds",
+        "codebuild:ListProjects"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

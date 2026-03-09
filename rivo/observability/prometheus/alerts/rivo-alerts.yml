@@ -1,0 +1,43 @@
+groups:
+  - name: rivo
+    rules:
+      - alert: RoutingEngineHighHttp5xxRate
+        expr: sum(rate(http_server_requests_seconds_count{application="rivo",status=~"5.."}[5m])) > 0.2
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: HTTP 5xx acima do limiar
+          description: A taxa de respostas 5xx do backend ficou acima de 0.2 req/s por 10 minutos.
+      - alert: RoutingEngineHigh429Rate
+        expr: sum(rate(http_server_requests_seconds_count{application="rivo",status="429"}[5m])) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: Rate limit elevado
+          description: O backend esta devolvendo 429 acima do esperado.
+      - alert: RoutingOptimizationP95High
+        expr: histogram_quantile(0.95, sum(rate(optimization_duration_seconds_bucket{application="rivo"}[10m])) by (le)) > 15
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: Latencia de otimizacao elevada
+          description: O p95 de optimization.duration passou de 15 segundos.
+      - alert: RoutingDlqGrowing
+        expr: sum(increase(routing_dlq_published_total{application="rivo",sink="db"}[15m])) > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: DLQ crescendo
+          description: Mais de 5 eventos foram persistidos em DLQ no periodo de 15 minutos.
+      - alert: RoutingLocationThroughputDropped
+        expr: sum(rate(routing_location_updates_total{application="rivo"}[10m])) < 0.05
+        for: 20m
+        labels:
+          severity: warning
+        annotations:
+          summary: Throughput de tracking muito baixo
+          description: O volume de updates de localizacao caiu abaixo do esperado.

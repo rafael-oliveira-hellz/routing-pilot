@@ -1,0 +1,79 @@
+version: 0.2
+
+env:
+  parameter-store:
+    DB_HOST: /routing/rds/host
+    DB_NAME: /routing/rds/dbname
+    DB_USER: /routing/rds/user
+    DB_PASS: /routing/rds/password
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - yum install -y osm2pgsql postgresql15
+      - pip install osmium
+
+  pre_build:
+    commands:
+      - echo "Downloading files from S3..."
+      - aws s3 cp s3://routing-data/osm/brazil-latest.osm.pbf /tmp/brazil.osm.pbf
+      - aws s3 cp s3://routing-data/osm/osm2pgsql-flex.lua /tmp/osm2pgsql-flex.lua
+      - ls -lh /tmp/brazil.osm.pbf
+      - echo "Testing RDS connectivity..."
+      - PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1;"
+
+  build:
+    commands:
+      - echo "Starting import at $(date)"
+      - |
+        if [ "$IMPORT_TYPE" = "full" ]; then
+          echo "=== FULL IMPORT ==="
+          PGPASSWORD="$DB_PASS" osm2pgsql \
+            --create \
+            --output=flex \
+            --style=/tmp/osm2pgsql-flex.lua \
+            --database="$DB_NAME" \
+            --host="$DB_HOST" \
+            --user="$DB_USER" \
+            --cache=8192 \
+            --number-processes=6 \
+            --log-progress=true \
+            /tmp/brazil.osm.pbf
+        else
+          echo "=== DIFF UPDATE ==="
+          aws s3 cp s3://routing-data/osm/brazil-diff.osc.gz /tmp/brazil-diff.osc.gz
+          PGPASSWORD="$DB_PASS" osm2pgsql \
+            --append \
+            --output=flex \
+            --style=/tmp/osm2pgsql-flex.lua \
+            --database="$DB_NAME" \
+            --host="$DB_HOST" \
+            --user="$DB_USER" \
+            --cache=4096 \
+            /tmp/brazil-diff.osc.gz
+        fi
+
+  post_build:
+    commands:
+      - echo "Running ANALYZE..."
+      - |
+        PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -c "
+          ANALYZE geo.osm_roads;
+          ANALYZE geo.osm_pois;
+          ANALYZE geo.osm_addresses;
+          ANALYZE geo.osm_boundaries;
+          ANALYZE geo.osm_buildings;
+          ANALYZE geo.osm_landuse;
+          ANALYZE geo.osm_water;
+          ANALYZE geo.osm_railways;
+        "
+      - |
+        PGPASSWORD="$DB_PASS" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -c "
+          INSERT INTO geo.osm_import_log
+            (source_file, import_type, started_at, finished_at, status)
+          VALUES
+            ('$SOURCE_FILE', '$IMPORT_TYPE', now() - interval '2 hours', now(), 'success');
+        "
+      - echo "Import finished at $(date)"

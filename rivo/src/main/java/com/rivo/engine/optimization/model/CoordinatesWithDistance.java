@@ -1,0 +1,12 @@
+package com.rivo.engine.optimization.model;
+
+import lombok.*;
+
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class CoordinatesWithDistance {
+    private Coordinate origin;
+    private Coordinate destination;
+    private Double distance;
+}
+
+

@@ -1,3 +1,24 @@
 # OSM / GraphHopper – arquivos .pbf são grandes, não versionar
 *.pbf
 *.osm.pbf
+keys/
+.DS_Store
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.7z
+
+.vscode/
+.idea/
+*.iml
+
+.m2repo
+_xlsx_verify/
